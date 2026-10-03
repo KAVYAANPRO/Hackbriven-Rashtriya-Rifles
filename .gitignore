@@ -5,6 +5,7 @@ Backend/
 # secrets and local env files
 .env
 .env.*
+!.env.example
 env (*)
 # build archives
 *.zip
