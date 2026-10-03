@@ -6,6 +6,7 @@ import {
 import { useStore } from '../../store.jsx';
 import { Seg, Skeleton } from '../common.jsx';
 import Icon from '../Icon.jsx';
+import StyleArt from './StyleArt.jsx';
 import ImageDrop from './ImageDrop.jsx';
 
 // Group the style list by style.group, keeping the server's order (a group sits where its first style is).
@@ -62,7 +63,7 @@ function StylePicker({ styles, value, onChange }) {
                   className={'cx-style' + (on ? ' is-on' : '')}
                   onClick={() => onChange(st.id)}
                 >
-                  <span className="cx-style-sw" style={{ background: styleSwatch(st.id) }} aria-hidden="true" />
+                  <StyleArt id={st.id} fallback={styleSwatch(st.id)} />
                   <span className="cx-style-name">{st.label || st.id}</span>
                   {st.description && <span className="cx-style-desc">{st.description}</span>}
                   {on && <span className="cx-style-mark" aria-hidden="true"><Icon name="check" size={12} /></span>}
@@ -80,8 +81,14 @@ export default function OptionsStep({ onEdit, images }) {
   const {
     topic, lang, setLang, tier, setTier, tiers, tiersAllowed, pricing, pricingError, credits, generate, gen, clearGenError,
     setTopupOpen, go, style, setStyle, styleText, setStyleText, resolution, setResolution, resolutionsAllowed,
+    providers, refreshProviders,
   } = useStore();
   const headRef = useRef(null);
+
+  // Re-check the image provider each time this step opens, so a used-up daily allowance is shown up front.
+  useEffect(() => { refreshProviders(); }, [refreshProviders]);
+  const quotaUntil = providers && providers.image && providers.image.quota_exhausted_until
+    ? new Date(providers.image.quota_exhausted_until) : null;
 
   const styles = styleList(pricing);
   const resolutions = resolutionList(pricing);
@@ -129,6 +136,21 @@ export default function OptionsStep({ onEdit, images }) {
       <header className="cx-opts-head">
         <h1 id="cx-opts-title" className="cx-opts-title" tabIndex={-1} ref={headRef}>Set up your video</h1>
       </header>
+
+      {quotaUntil && (
+        <div className="notice notice--bad" role="status">
+          <Icon name="alert" size={18} />
+          <div>
+            <b>Today&apos;s AI image limit has been reached</b>
+            <span>
+              {providers.image.chain && providers.image.chain.includes('pollinations')
+                ? 'New videos will use a lower-quality backup image service until the limit resets at '
+                : 'New videos will use simple title cards instead of AI images until the limit resets at '}
+              {quotaUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Reference images you upload are still used.
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="cx-recap">
         <div className="cx-recap-body">
