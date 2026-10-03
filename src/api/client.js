@@ -116,11 +116,14 @@ export async function ready(opts) {
   }
 }
 export const providersStatus = (opts) => get('/providers/status', { ...opts, auth: false });
+export const adminProviders = (opts) => get('/admin/providers', opts); // master admin only (403 otherwise)
 export const plans = (opts) => get('/plans', { ...opts, auth: false });
 
 // ---- accounts ----
 export const register = (email, password) => post('/auth/register', { email, password }, { auth: false });
 export const login = (email, password) => post('/auth/login', { email, password }, { auth: false });
+export const verifyEmail = (email, code) => post('/auth/verify-email', { email, code }, { auth: false });
+export const resendCode = (email) => post('/auth/resend-code', { email }, { auth: false });
 export const me = (opts) => get('/auth/me', opts);
 
 // ---- credits & payments ----
