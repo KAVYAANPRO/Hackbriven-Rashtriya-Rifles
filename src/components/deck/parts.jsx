@@ -27,6 +27,8 @@ export function CountUp({ to, on = true, duration = 800, whenVisible = false }) 
   const go = on && seen;
   useEffect(() => {
     if (!go) { setV(0); return undefined; }
+    // Background tabs get no animation frames: show the real number instead of a frozen 0.
+    if (typeof document !== 'undefined' && document.hidden) { setV(to); return undefined; }
     let raf;
     const t0 = performance.now();
     const step = (t) => {

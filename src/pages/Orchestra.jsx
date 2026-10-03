@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { providerName } from '../data.js';
 import { useStore } from '../store.jsx';
+import * as api from '../api/client.js';
 import { ErrorState, PageHeader, Skeleton } from '../components/common.jsx';
 import Icon from '../components/Icon.jsx';
 
@@ -53,7 +54,17 @@ function nodeView(stage, name, idx, configured, firstOk, shown) {
 }
 
 export default function Orchestra() {
-  const { providers, providersError, refreshProviders, systemReady, pricing, jobs, refreshJobs } = useStore();
+  const { providers: publicProviders, providersError, refreshProviders, systemReady, pricing, jobs, refreshJobs } = useStore();
+  // Master-admin view: the admin endpoint adds key-pool sizes and each Cloudflare account's state.
+  const [adminProviders, setAdminProviders] = useState(null);
+  useEffect(() => {
+    let dead = false;
+    api.adminProviders().then((d) => { if (!dead) setAdminProviders(d); }).catch(() => { /* fall back to the public status */ });
+    return () => { dead = true; };
+  }, []);
+  const providers = adminProviders || publicProviders;
+  const cfAccounts = adminProviders && adminProviders.image && Array.isArray(adminProviders.image.cloudflare_accounts)
+    ? adminProviders.image.cloudflare_accounts : [];
   const [step, setStep] = useState(-1);
 
   useEffect(() => {
@@ -185,9 +196,20 @@ export default function Orchestra() {
               </div>
             ))}
           </section>
+
+          {cfAccounts.length > 0 && (
+            <section className="flags2" aria-label="Image accounts">
+              {cfAccounts.map((a, i) => (
+                <div className="flag2 spot-card rise" style={{ '--i': i + 16 }} key={`${a.account}-${a.key || 1}`}>
+                  <span className="mono">Image key {i + 1} ({a.account}{a.key > 1 ? `, backup key ${a.key}` : ''})</span>
+                  <b>{a.available ? 'Available' : `Daily limit used, back at ${new Date(a.resets_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}</b>
+                </div>
+              ))}
+            </section>
+          )}
         </>
       )}
-      <p className="fine2">Chains and configured state come from GET /providers/status; FFmpeg and MongoDB connection from GET /ready. The replay shows the real provider attempts recorded on your most recent job.</p>
+      <p className="fine2">Chains, key pools and image-account state come from GET /admin/providers (master admin only); FFmpeg and MongoDB connection from GET /ready. The replay shows the real provider attempts recorded on your most recent job.</p>
     </>
   );
 }
