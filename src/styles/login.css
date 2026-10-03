@@ -81,3 +81,7 @@
 @media (prefers-reduced-motion: reduce) {
   .rise { animation: none; }
 }
+
+/* email verification step */
+.verify-note { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted, #9aa6a0); }
+.verify-code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 26px; letter-spacing: 0.5em; text-align: center; }
