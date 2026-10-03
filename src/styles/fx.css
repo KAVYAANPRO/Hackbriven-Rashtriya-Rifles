@@ -22,9 +22,9 @@
   padding: 1px; /* the visible ring is exactly the element's 1px border band */
   background: radial-gradient(
     var(--fx-glow-size) circle at var(--gx, 50%) var(--gy, 50%),
-    rgba(var(--fx-glow), 1),
-    rgba(var(--fx-glow), 0.45) 38%,
-    transparent 72%
+    rgba(var(--fx-glow), 0.85),
+    rgba(var(--fx-glow), 0.3) 40%,
+    transparent 75%
   );
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -34,16 +34,14 @@
   animation: fx-glow-in 0.22s ease-out;
 }
 .is-glow {
-  box-shadow:
-    0 0 0 1px rgba(var(--fx-glow), 0.18),
-    0 0 26px -8px rgba(var(--fx-glow), 0.55);
+  box-shadow: 0 0 22px -12px rgba(var(--fx-glow), 0.45);
   transition: box-shadow 0.2s ease, border-color 0.15s, background 0.15s;
 }
 @keyframes fx-glow-in { from { opacity: 0; } to { opacity: 1; } }
 
 /* Nav tabs and segmented tabs are small: a tighter light reads better. */
 .st-nav-item.is-glow::after, .seg2 > button.is-glow::after, .chip2.is-glow::after, .dl-item.is-glow::after { --fx-glow-size: 90px; }
-.st-nav-item.is-glow, .seg2 > button.is-glow, .chip2.is-glow { box-shadow: 0 0 18px -8px rgba(var(--fx-glow), 0.6); }
+.st-nav-item.is-glow, .seg2 > button.is-glow, .chip2.is-glow { box-shadow: 0 0 14px -8px rgba(var(--fx-glow), 0.45); }
 
 /* ---- custom cursor (only on mouse / trackpad devices; see PointerFX) ---- */
 .fx-cursor { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; display: none; }
@@ -52,38 +50,35 @@
 /* Text fields keep the normal caret cursor, and the custom one steps aside there. */
 .fx-cursor-on :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), textarea, [contenteditable="true"]) { cursor: text !important; }
 
-.fx-dot, .fx-ring {
-  position: absolute; left: 0; top: 0;
-  border-radius: 50%;
-  opacity: 0;
-  will-change: transform;
+/* The wrapper is moved to the pointer; the arrow's tip (3,2 in the SVG) is the click point. */
+.fx-pointer { position: absolute; left: 0; top: 0; margin: -2px 0 0 -3px; will-change: transform; opacity: 0; }
+.fx-cursor-visible .fx-pointer { opacity: 1; transition: opacity 0.15s ease; }
+
+.fx-arrow {
+  display: block;
+  overflow: visible;
+  transform-origin: 3px 2px;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 }
-.fx-dot {
-  width: 6px; height: 6px; margin: -3px 0 0 -3px;
-  background: rgb(var(--fx-glow));
-  box-shadow: 0 0 0 1.5px rgba(10, 16, 16, 0.85), 0 0 10px rgba(var(--fx-glow), 0.7);
-}
-.fx-ring {
-  width: 30px; height: 30px; margin: -15px 0 0 -15px;
-  border: 1.5px solid rgba(var(--fx-glow), 0.55);
-  box-shadow: 0 0 12px -2px rgba(var(--fx-glow), 0.35);
+.fx-arrow path {
+  fill: #0b1010;
+  stroke: #f5f5f0;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  paint-order: stroke;
+  transition: stroke 0.18s ease, fill 0.18s ease;
 }
 
-.fx-cursor-visible .fx-dot, .fx-cursor-visible .fx-ring { opacity: 1; transition: opacity 0.2s ease; }
-
-/* Hovering something clickable: the ring opens up and fills faintly, the dot tightens. */
-.fx-ring { transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1), margin 0.22s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, border-color 0.2s, opacity 0.2s; }
-.fx-cursor-hover .fx-ring {
-  width: 44px; height: 44px; margin: -22px 0 0 -22px;
-  background: rgba(var(--fx-glow), 0.08);
-  border-color: rgba(var(--fx-glow), 0.9);
-}
-.fx-cursor-hover .fx-dot { width: 4px; height: 4px; margin: -2px 0 0 -2px; }
-.fx-cursor-down .fx-ring { width: 24px; height: 24px; margin: -12px 0 0 -12px; background: rgba(var(--fx-glow), 0.18); }
-.fx-cursor-blocked .fx-ring { border-style: dashed; border-color: rgba(255, 255, 255, 0.35); background: none; }
-.fx-cursor-text .fx-dot, .fx-cursor-text .fx-ring { opacity: 0 !important; }
+/* Over something clickable: a gentle lift and a faint accent edge. */
+.fx-cursor-hover .fx-arrow { transform: scale(1.12); filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px rgba(var(--fx-glow), 0.35)); }
+.fx-cursor-hover .fx-arrow path { stroke: rgb(var(--fx-glow)); }
+.fx-cursor-down .fx-arrow { transform: scale(0.9); }
+.fx-cursor-blocked .fx-arrow { opacity: 0.55; }
+.fx-cursor-text .fx-pointer { opacity: 0 !important; visibility: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
-  .fx-ring, .is-glow { transition: none; }
+  .fx-arrow, .fx-arrow path, .is-glow { transition: none; }
   .is-glow::after { animation: none; }
 }

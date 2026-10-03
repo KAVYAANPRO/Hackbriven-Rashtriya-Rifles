@@ -13,23 +13,19 @@ const TEXT_FIELD = 'input:not([type="checkbox"]):not([type="radio"]):not([type="
 const DISABLED = ':disabled, [aria-disabled="true"]';
 
 const finePointer = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // One pointer listener and one animation frame drive both effects:
-//  * a minimal custom cursor (dot + trailing ring) on mouse/trackpad devices only;
+//  * a custom arrow cursor on mouse/trackpad devices only;
 //  * a border glow on whichever card/tab is under the pointer, positioned at the pointer.
 export default function PointerFX() {
-  const dotRef = useRef(null);
-  const ringRef = useRef(null);
+  const pointerRef = useRef(null);
 
   useEffect(() => {
     const cursorOn = finePointer();
-    const snap = reducedMotion();
     const root = document.documentElement;
     if (cursorOn) root.classList.add('fx-cursor-on');
 
     let x = -100, y = -100;          // pointer
-    let rx = -100, ry = -100;        // ring (eases toward the pointer)
     let raf = 0;
     let glowEl = null;
     let lastTarget = null;
@@ -50,14 +46,8 @@ export default function PointerFX() {
         glowEl.style.setProperty('--gx', `${x - r.left}px`);
         glowEl.style.setProperty('--gy', `${y - r.top}px`);
       }
-      if (!cursorOn) return;
-      const k = snap ? 1 : 0.22;
-      rx += (x - rx) * k;
-      ry += (y - ry) * k;
-      if (dotRef.current) dotRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      if (ringRef.current) ringRef.current.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-      // Keep easing until the ring has caught up with the pointer.
-      if (Math.abs(x - rx) > 0.3 || Math.abs(y - ry) > 0.3) raf = requestAnimationFrame(frame);
+      // The arrow sits exactly on the pointer (no easing: a lagging pointer feels broken).
+      if (cursorOn && pointerRef.current) pointerRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     };
     const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
 
@@ -80,7 +70,6 @@ export default function PointerFX() {
       }
       if (cursorOn && !visible) {
         visible = true;
-        rx = x; ry = y; // first appearance: start the ring on the pointer instead of flying in
         root.classList.add('fx-cursor-visible');
       }
       kick();
@@ -117,8 +106,12 @@ export default function PointerFX() {
 
   return (
     <div className="fx-cursor" aria-hidden="true">
-      <i className="fx-ring" ref={ringRef} />
-      <i className="fx-dot" ref={dotRef} />
+      <div className="fx-pointer" ref={pointerRef}>
+        {/* Rounded arrow: tip at (3,2), which is the click point. */}
+        <svg className="fx-arrow" width="26" height="26" viewBox="0 0 26 26">
+          <path d="M3.6 2.6 L22 11.4 Q 15.6 12.9 13.4 19.2 L 12.1 22.6 Z" />
+        </svg>
+      </div>
     </div>
   );
 }
