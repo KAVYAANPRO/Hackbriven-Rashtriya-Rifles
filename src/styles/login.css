@@ -1,0 +1,83 @@
+/* ============ Login ============ */
+.login { --mx: 0; --my: 0; position: relative; overflow: hidden; }
+.login-side { position: relative; overflow: hidden; isolation: isolate; background: #013a4a; }
+.login-main { position: relative; overflow: hidden; isolation: isolate; }
+.login-side > *:not(.lg-bg), .login-main > *:not(.main-bg) { position: relative; z-index: 2; }
+
+/* staggered entrance */
+.rise { animation: loginRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(var(--d, 0) * 70ms + 120ms); }
+@keyframes loginRise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+/* ---- left: animated scene ---- */
+.lg-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.lg-bg::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 120%, rgba(7, 13, 13, 0.7), transparent 60%), linear-gradient(180deg, rgba(7, 13, 13, 0.25), transparent 30%); }
+
+.orb { position: absolute; border-radius: 50%; will-change: transform; translate: calc(var(--mx) * var(--px, 30px)) calc(var(--my) * var(--py, 20px)); transition: translate 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+.orb--a { --px: -34px; --py: -22px; left: -18%; top: -14%; width: 78%; aspect-ratio: 1; background: radial-gradient(circle, rgba(180, 231, 104, 0.55), rgba(180, 231, 104, 0) 66%); animation: orbA 9s ease-in-out infinite alternate; }
+.orb--b { --px: 28px; --py: 30px; right: -26%; top: 22%; width: 82%; aspect-ratio: 1; background: radial-gradient(circle, rgba(0, 190, 200, 0.5), rgba(0, 190, 200, 0) 64%); animation: orbB 11s ease-in-out infinite alternate; }
+.orb--c { --px: -18px; --py: 12px; left: 8%; bottom: -30%; width: 70%; aspect-ratio: 1; background: radial-gradient(circle, rgba(244, 235, 195, 0.32), rgba(244, 235, 195, 0) 62%); animation: orbA 13s ease-in-out infinite alternate-reverse; }
+@keyframes orbA { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(9%, 12%, 0) scale(1.12); } }
+@keyframes orbB { from { transform: translate3d(0, 0, 0) scale(1.05); } to { transform: translate3d(-12%, -9%, 0) scale(0.92); } }
+
+/* perspective grid that slides toward the viewer */
+.floor-grid { position: absolute; left: -30%; right: -30%; bottom: 0; height: 52%; perspective: 520px; overflow: hidden; -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%); }
+.floor-grid i { position: absolute; left: 0; right: 0; top: 0; height: 220%; transform-origin: 50% 0; background: linear-gradient(rgba(180, 231, 104, 0.45) 1px, transparent 1px) 0 0 / 54px 54px, linear-gradient(90deg, rgba(180, 231, 104, 0.35) 1px, transparent 1px) 0 0 / 54px 54px; transform: rotateX(64deg); animation: gridRun 2.2s linear infinite; will-change: transform; }
+@keyframes gridRun { from { transform: rotateX(64deg) translateY(0); } to { transform: rotateX(64deg) translateY(54px); } }
+
+/* video frames being generated, rising through the scene */
+.frames { position: absolute; inset: 0; }
+.frame { position: absolute; top: 100%; aspect-ratio: 9 / 14; border: 1px solid rgba(244, 235, 195, 0.22); background: linear-gradient(160deg, rgba(180, 231, 104, 0.12), rgba(0, 80, 102, 0.55)); padding: 6px; display: flex; flex-direction: column; gap: 6px; animation: frameRise var(--dur) linear var(--delay) infinite backwards; will-change: transform, opacity; }
+.frame-art { flex: 1; position: relative; overflow: hidden; background: repeating-linear-gradient(135deg, rgba(0, 80, 102, 0.9) 0 6px, rgba(12, 43, 52, 0.9) 6px 12px); }
+.frame-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(244, 235, 195, 0.28) 50%, transparent 70%); transform: translateX(-120%); animation: shimmer 2.6s ease-in-out infinite; }
+.frame-meta { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: rgba(244, 235, 195, 0.7); }
+.frame-meta b { width: 22px; height: 3px; background: var(--color-accent); transform-origin: left; animation: fillBar 3.4s ease-in-out infinite; }
+@keyframes frameRise {
+  0% { transform: translate3d(0, 0, 0) rotate(var(--tilt)); opacity: 0; }
+  10% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { transform: translate3d(0, -135vh, 0) rotate(calc(var(--tilt) * -1)); opacity: 0; }
+}
+@keyframes shimmer { 0% { transform: translateX(-120%); } 60%, 100% { transform: translateX(120%); } }
+@keyframes fillBar { 0% { transform: scaleX(0.1); } 70%, 100% { transform: scaleX(1); } }
+
+.login-copy { margin-top: auto; }
+.login-side { justify-content: flex-start; }
+.login-side .brand-plain { margin-bottom: auto; }
+.login-h { text-shadow: 0 2px 30px rgba(7, 13, 13, 0.45); }
+
+/* pipeline stepper */
+.pipe { list-style: none; margin: 0; padding: 0; position: relative; display: grid; grid-template-columns: repeat(5, 1fr); }
+.pipe li { position: relative; display: flex; flex-direction: column; gap: 3px; padding-top: 22px; font-family: var(--font-mono); font-size: 11px; color: rgba(244, 235, 195, 0.45); transition: color 0.4s ease; }
+.pipe li.is-on { color: var(--color-text); }
+.pipe-track { position: absolute !important; left: 6px; right: calc(20% - 6px); top: 6px; height: 2px; padding: 0 !important; background: rgba(244, 235, 195, 0.18); }
+.pipe-track i { position: absolute; inset: 0; background: var(--color-accent); transform-origin: left; transition: transform 1s cubic-bezier(0.45, 0, 0.2, 1); box-shadow: 0 0 10px rgba(180, 231, 104, 0.8); }
+.pipe-node { position: absolute; left: 0; top: 0; width: 14px; height: 14px; background: #013a4a; border: 2px solid rgba(244, 235, 195, 0.35); transition: background 0.4s, border-color 0.4s, box-shadow 0.4s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.pipe li.is-on .pipe-node { background: var(--color-accent); border-color: var(--color-accent); box-shadow: 0 0 0 5px rgba(180, 231, 104, 0.2), 0 0 16px rgba(180, 231, 104, 0.8); transform: scale(1.1); }
+.pipe-n { color: var(--color-accent); }
+.pipe-l { font-family: var(--font-body); font-weight: 700; font-size: 12px; }
+
+/* ---- right: quiet motion behind the form ---- */
+.main-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.beam { position: absolute; left: 50%; top: 50%; width: 90vmin; height: 90vmin; margin: -45vmin 0 0 -45vmin; border-radius: 50%; background: conic-gradient(from 0deg, rgba(180, 231, 104, 0.22), transparent 28%, rgba(0, 150, 170, 0.18) 55%, transparent 80%, rgba(180, 231, 104, 0.22)); -webkit-mask-image: radial-gradient(circle, transparent 28%, #000 52%, transparent 70%); mask-image: radial-gradient(circle, transparent 28%, #000 52%, transparent 70%); animation: spin 26s linear infinite; will-change: transform; translate: calc(var(--mx) * -14px) calc(var(--my) * -10px); transition: translate 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+.dots { position: absolute; inset: -40px; background: radial-gradient(rgba(244, 235, 195, 0.22) 1px, transparent 1.4px) 0 0 / 28px 28px; -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 0, transparent 70%); mask-image: radial-gradient(ellipse at 50% 50%, #000 0, transparent 70%); animation: dotsDrift 14s linear infinite; will-change: transform; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes dotsDrift { to { transform: translate3d(28px, 28px, 0); } }
+
+/* form polish */
+.login-form { position: relative; padding: 32px; background: rgba(7, 13, 13, 0.82); border: 1px solid rgba(244, 235, 195, 0.14); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45); }
+.login-form .input { transition: border-color 0.2s, box-shadow 0.25s, background 0.2s, transform 0.25s; }
+.login-form .input:focus-visible { border-color: var(--color-accent); box-shadow: 0 0 0 4px rgba(180, 231, 104, 0.16), 0 0 24px rgba(180, 231, 104, 0.18); transform: translateY(-1px); }
+.login-btn { position: relative; overflow: hidden; transition: background 0.2s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s; }
+.login-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%); transform: translateX(-120%); }
+.login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(180, 231, 104, 0.35); }
+.login-btn:hover::after { transform: translateX(120%); transition: transform 0.7s ease; }
+.alert { animation: loginRise 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (max-width: 760px) {
+  .login-form { padding: 22px; }
+  .pipe-l { font-size: 10px; }
+  .frame { opacity: 0.6; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+}

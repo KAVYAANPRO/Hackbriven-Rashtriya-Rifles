@@ -1,0 +1,8 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "ideafeed", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 },
+    { "name": "ideafeed-api", "runtimeExecutable": "python", "runtimeArgs": ["Backend/hackbriven---test/run_api.py"], "port": 8000 },
+    { "name": "ideafeed-api-local", "runtimeExecutable": "python", "runtimeArgs": ["Backend/hackbriven---test/run_api.py", "--local"], "port": 8000 }
+  ]
+}

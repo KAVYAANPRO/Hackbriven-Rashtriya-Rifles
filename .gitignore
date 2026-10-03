@@ -1,0 +1,10 @@
+node_modules/
+dist/
+# the backend lives in its own git repository
+Backend/
+# secrets and local env files
+.env
+.env.*
+env (*)
+# build archives
+*.zip

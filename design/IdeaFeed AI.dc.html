@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_ds/modernist-44d264fb-eec7-4ddd-b459-5aa0d3566903/styles.css">
+<script src="_ds/modernist-44d264fb-eec7-4ddd-b459-5aa0d3566903/_ds_bundle.js"></script>
+<style>:root{--color-bg:#070D0D;--color-surface:#111A1A;--color-text:#F4EBC3;--color-accent:#B4E768;--color-accent-100:#0C2B34;--color-accent-200:#123F4C;--color-accent-300:#005066;--color-accent-400:#B4E768;--color-accent-500:#B4E768;--color-accent-600:#C4EA7F;--color-accent-700:#D3EE96;--color-accent-800:#E4F4BE;--color-accent-900:#F2FADD;--color-neutral-100:#0E1616;--color-neutral-200:#151D1D;--color-neutral-300:#2A3434;--color-neutral-400:#4A5656;--color-neutral-500:#6B7878;--color-neutral-600:#8A9696;--color-neutral-700:#A9B3A9;--color-neutral-800:#C9CDB5;--color-neutral-900:#E8E4C8;--color-divider:color-mix(in srgb,#F4EBC3 40%,transparent)}body{margin:0;background:#070D0D}a{color:#B4E768;text-decoration:none}a:hover{color:#F4EBC3}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes sweep{0%{background-position:0 0}100%{background-position:40px 0}}@keyframes blink{50%{opacity:0}}</style>
+</helmet>
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+
+<sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+<header style="position:sticky;top:0;z-index:20;background:var(--color-bg);border-bottom:2px solid var(--color-text);display:flex;align-items:stretch;flex-wrap:wrap">
+  <div style="padding:0 24px;display:flex;align-items:center;gap:10px;border-right:2px solid var(--color-text);font-weight:900;font-size:20px;letter-spacing:-.02em;min-height:64px"><span style="width:14px;height:14px;background:var(--color-accent);display:inline-block"></span>IdeaFeed AI</div>
+  <nav style="display:flex;flex:1;flex-wrap:wrap">
+    <a href="#how" style="display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:700;color:var(--color-text)">How it works</a>
+    <a href="#features" style="display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:700;color:var(--color-text)">Features</a>
+    <a href="#pricing" style="display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:700;color:var(--color-text)">Credits</a>
+  </nav>
+  <div onClick="{{ toLogin }}" style="cursor:pointer;display:flex;align-items:center;padding:0 28px;font-weight:800;font-size:14px;background:var(--color-accent);color:#070D0D;border-left:2px solid var(--color-text)">{{ ctaLabel }} →</div>
+</header>
+<div style="max-width:1280px;margin:0 auto;padding:0 24px">
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));border-bottom:2px solid var(--color-text)">
+  <div style="padding:72px 40px 64px 0;border-right:1px solid var(--color-divider)">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700);margin-bottom:24px">AI SHORT-VIDEO PIPELINE</div>
+    <h1 style="font-weight:900;font-size:clamp(52px,7.4vw,112px);line-height:.88;letter-spacing:-.05em;margin:0 0 28px">One idea.<br>One reviewed<br>video<span style="color:var(--color-accent)">.</span></h1>
+    <p style="font-size:20px;line-height:1.5;max-width:520px;margin:0 0 36px;color:var(--color-neutral-800)">Type a topic in English, हिन्दी or Hinglish. Script, images, voice, captions and motion are produced in five stages, and you approve the result before it is handed off.</p>
+    <div style="display:flex;gap:16px;flex-wrap:wrap"><button class="btn btn-primary" onClick="{{ toLogin }}" style="font-size:16px;padding:16px 28px;min-width:220px">{{ ctaLabel }}</button><a href="#how" style="display:flex;align-items:center;padding:0 8px;font-weight:700">See the pipeline ↓</a></div>
+  </div>
+  <div style="padding:48px 0 48px 40px;display:flex;align-items:center">
+    <div style="width:100%;border:2px solid var(--color-text);background:var(--color-surface)">
+      <div style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--color-text);font-family:'JetBrains Mono',monospace;font-size:12px"><span>job_8f2a41 · balanced · en</span><span style="display:flex;gap:6px;align-items:center"><i style="width:8px;height:8px;background:var(--color-accent);display:inline-block;animation:pulse 1s infinite"></i>running</span></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr)">
+        <div style="border-top:6px solid var(--color-text);padding:10px 8px;font-size:11px;font-weight:800">Queued</div><div style="border-top:6px solid var(--color-text);padding:10px 8px;font-size:11px;font-weight:800">Intel</div><div style="border-top:6px solid var(--color-text);padding:10px 8px;font-size:11px;font-weight:800">Gener.</div><div style="border-top:6px solid var(--color-accent);padding:10px 8px;font-size:11px;font-weight:800;color:var(--color-accent);animation:pulse 1.4s infinite">Compos.</div><div style="border-top:6px solid var(--color-neutral-300);padding:10px 8px;font-size:11px;font-weight:800;color:var(--color-neutral-500)">Valid.</div>
+      </div>
+      <div style="padding:20px 16px 8px"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--color-neutral-700);margin-bottom:6px">script.hook</div><div style="font-size:22px;font-weight:700;line-height:1.25">Why does the cheapest chai stall never make you sick?<span style="display:inline-block;width:9px;height:20px;background:var(--color-accent);vertical-align:-3px;margin-left:3px;animation:blink 1s infinite"></span></div></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:16px">
+        <div style="aspect-ratio:9/12;background:repeating-linear-gradient(135deg,#005066 0 6px,#0C2B34 6px 12px)"></div><div style="aspect-ratio:9/12;background:repeating-linear-gradient(135deg,#005066 0 6px,#0C2B34 6px 12px)"></div><div style="aspect-ratio:9/12;background:repeating-linear-gradient(135deg,#005066 0 6px,#0C2B34 6px 12px)"></div><div style="aspect-ratio:9/12;background:linear-gradient(90deg,#123F4C,#005066,#123F4C);background-size:40px 100%;animation:sweep 1s linear infinite"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border-bottom:2px solid var(--color-text)">
+  <sc-for list="{{ lpStats }}" as="s" hint-placeholder-count="4"><div style="padding:32px 24px 32px 0"><div style="font-weight:900;font-size:64px;letter-spacing:-.05em;line-height:1">{{ s.v }}</div><div style="font-size:14px;margin-top:8px;color:var(--color-neutral-800)">{{ s.l }}</div></div></sc-for>
+</section>
+<section id="how" style="padding:80px 0 24px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">01 / HOW IT WORKS</div>
+  <h2 style="font-weight:900;font-size:clamp(36px,5vw,64px);letter-spacing:-.04em;line-height:1;margin:12px 0 40px;max-width:760px">Five stages, tracked in real time.</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))">
+    <sc-for list="{{ pipelineSteps }}" as="p" hint-placeholder-count="5"><div style="padding:20px 20px 28px 0;border-top:2px solid var(--color-text)"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-accent)">{{ p.n }}</div><div style="font-weight:800;font-size:22px;margin:8px 0">{{ p.t }}</div><div style="font-size:14px;line-height:1.5;color:var(--color-neutral-800)">{{ p.d }}</div></div></sc-for>
+  </div>
+</section>
+<section id="features" style="padding:48px 0 80px">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">02 / FEATURES</div>
+  <div style="margin-top:24px;border-top:2px solid var(--color-text)">
+    <sc-for list="{{ lpFeatures }}" as="f" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:80px minmax(0,1fr) minmax(0,1.2fr);gap:24px;padding:28px 0;border-bottom:1px solid var(--color-divider)"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--color-accent)">{{ f.n }}</div><div style="font-weight:900;font-size:28px;letter-spacing:-.02em;line-height:1.1">{{ f.t }}</div><div style="font-size:16px;line-height:1.55;color:var(--color-neutral-800)">{{ f.d }}</div></div></sc-for>
+  </div>
+</section>
+</div>
+<section id="pricing" style="background:#005066;border-top:2px solid var(--color-text);border-bottom:2px solid var(--color-text)">
+  <div style="max-width:1280px;margin:0 auto;padding:72px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:48px">
+    <div><div style="font-family:'JetBrains Mono',monospace;font-size:12px">03 / CREDITS</div><h2 style="font-weight:900;font-size:clamp(36px,5vw,64px);letter-spacing:-.04em;line-height:1;margin:12px 0 16px">Pay per video, by motion tier.</h2><p style="font-size:17px;line-height:1.5;max-width:440px;margin:0">Credits are charged when a job is submitted. Top up through Razorpay Checkout; card details never reach this app.</p></div>
+    <div style="border:2px solid var(--color-text)">
+      <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:22px 24px;border-bottom:1px solid var(--color-text)"><div><div style="font-weight:800;font-size:22px">{{ t.label }}</div><div style="font-size:13px;margin-top:2px">{{ t.desc }}</div></div><div style="font-weight:900;font-size:44px;letter-spacing:-.04em">{{ t.cost }}<span style="font-size:13px;font-weight:600;margin-left:6px">credits</span></div></div></sc-for>
+    </div>
+  </div>
+</section>
+<section style="background:var(--color-accent);color:#070D0D">
+  <div style="max-width:1280px;margin:0 auto;padding:80px 24px;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap">
+    <h2 style="font-weight:900;font-size:clamp(44px,7vw,104px);letter-spacing:-.05em;line-height:.9;margin:0">Start with<br>one topic.</h2>
+    <button onClick="{{ toLogin }}" style="cursor:pointer;background:#070D0D;color:var(--color-text);border:0;padding:20px 32px;font:800 17px var(--font-body);text-align:left;min-width:240px">{{ ctaLabel }} →</button>
+  </div>
+</section>
+<footer style="max-width:1280px;margin:0 auto;padding:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--color-neutral-700)"><span>IdeaFeed AI</span><span>Videos are handed off manually. Nothing is published without approval.</span></footer>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<section style="min-height:100vh;display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr))">
+  <div style="background:#005066;padding:40px 48px;display:flex;flex-direction:column;justify-content:space-between;gap:48px;border-right:2px solid var(--color-text)">
+    <div onClick="{{ toLanding }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:-.02em"><span style="width:14px;height:14px;background:var(--color-accent);display:inline-block"></span>IdeaFeed AI</div>
+    <div><h1 style="font-weight:900;font-size:clamp(44px,5.5vw,84px);line-height:.92;letter-spacing:-.045em;margin:0 0 20px">Review, approve,<br>hand off<span style="color:var(--color-accent)">.</span></h1><p style="font-size:18px;line-height:1.5;max-width:420px;margin:0">Your jobs, credits and provider status are waiting inside.</p></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px">01 Intelligence · 02 Generation · 03 Composition · 04 Validation · 05 Review</div>
+  </div>
+  <div style="background:var(--color-bg);padding:40px 48px;display:flex;flex-direction:column;justify-content:center">
+    <form onSubmit="{{ login }}" style="max-width:420px;width:100%;display:flex;flex-direction:column;gap:22px">
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">SIGN IN</div><h2 style="font-weight:900;font-size:40px;letter-spacing:-.03em;margin:8px 0 0">Welcome back</h2></div>
+      <div class="field"><label style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em">Email</label><input class="input" type="email" placeholder="you@company.com" value="{{ email }}" onChange="{{ setEmail }}" style="width:100%;box-sizing:border-box;font-size:16px;padding:14px"></div>
+      <div class="field"><label style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em">Password</label><input class="input" type="password" placeholder="At least 6 characters" value="{{ password }}" onChange="{{ setPass }}" style="width:100%;box-sizing:border-box;font-size:16px;padding:14px"></div>
+      <sc-if value="{{ hasLoginErr }}" hint-placeholder-val="{{ false }}"><div style="border:2px solid var(--color-accent);padding:12px 14px;font-size:14px;font-weight:600">{{ loginErr }}</div></sc-if>
+      <button class="btn btn-primary" type="submit" style="font-size:16px;padding:16px 28px">Sign in</button>
+      <button class="btn btn-secondary" type="button" onClick="{{ demoLogin }}">Continue with demo account</button>
+      <a href="#" onClick="{{ toLanding }}" style="font-size:13px;font-weight:600">← Back to home</a>
+    </form>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<!-- TOP BAR / STATUS RAIL -->
+<header style="position:sticky;top:0;z-index:20;background:var(--color-bg);border-bottom:2px solid var(--color-text)">
+  <div style="display:flex;align-items:stretch;flex-wrap:wrap">
+    <div onClick="{{ goCreate }}" style="cursor:pointer;padding:0 24px;display:flex;align-items:center;gap:10px;border-right:2px solid var(--color-text);font-weight:900;font-size:20px;letter-spacing:-.02em;min-height:60px">
+      <span style="width:14px;height:14px;background:var(--color-accent);display:inline-block"></span>IdeaFeed AI
+    </div>
+    <nav style="display:flex;flex:1;flex-wrap:wrap">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+        <div onClick="{{ n.go }}" style="cursor:pointer;display:flex;align-items:center;padding:0 20px;font-size:14px;font-weight:700;border-right:1px solid var(--color-divider);background:{{ n.bg }};color:{{ n.fg }};min-height:60px">{{ n.label }}</div>
+      </sc-for>
+    </nav>
+    <div style="display:flex;align-items:stretch;border-left:2px solid var(--color-text)">
+      <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goActive }}" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--color-divider);font-size:13px;font-weight:700;background:#B4E768;color:#070D0D">
+          <span style="width:8px;height:8px;background:#B4E768;animation:pulse 1s infinite"></span>Job running · {{ activeElapsed }}
+        </div>
+      </sc-if>
+      <div style="display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--color-divider);font-size:13px;font-weight:600" title="GET /ready">
+        <span style="width:10px;height:10px;background:{{ readyColor }};display:inline-block"></span>{{ readyLabel }}
+      </div>
+      <div onClick="{{ signOut }}" style="cursor:pointer;display:flex;align-items:center;padding:0 16px;border-left:1px solid var(--color-divider);font-size:13px;font-weight:700">Sign out</div>
+      <div onClick="{{ goCredits }}" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:0 20px;font-size:13px;font-weight:600">
+        Credits <b style="font-size:20px;font-weight:800">{{ credits }}</b>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main style="max-width:1280px;margin:0 auto;padding:0 24px 80px">
+
+<!-- ============ CREATE ============ -->
+<sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));border-bottom:2px solid var(--color-text)">
+  <div style="padding:56px 40px 48px 0;border-right:1px solid var(--color-divider)">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700);margin-bottom:20px">01 / CREATE</div>
+    <h1 style="font-family:var(--font-heading);font-weight:900;font-size:clamp(44px,6vw,84px);line-height:.92;letter-spacing:-.04em;margin:0 0 24px">Type an idea.<br>Get a reviewed video<span style="color:var(--color-accent)">.</span></h1>
+    <p style="font-size:18px;line-height:1.5;max-width:460px;margin:0;color:var(--color-neutral-800)">Script, images, voice, captions and motion run as a five-stage pipeline. You approve the result before anything is handed off.</p>
+  </div>
+  <div style="padding:40px 0 40px 40px;display:flex;flex-direction:column;gap:28px">
+    <div class="field">
+      <label style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em">Topic</label>
+      <textarea class="input" rows="4" placeholder="e.g. Why Indian street food vendors never get food poisoning" value="{{ topic }}" onChange="{{ setTopic }}" style="width:100%;box-sizing:border-box;font-size:18px;padding:14px;resize:vertical;font-family:inherit"></textarea>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Language</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--color-text)">
+        <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+          <div onClick="{{ l.pick }}" style="cursor:pointer;padding:14px;font-weight:700;background:{{ l.bg }};color:{{ l.fg }};border-right:1px solid var(--color-text)">{{ l.label }}<div style="font-family:'JetBrains Mono',monospace;font-weight:400;font-size:11px;opacity:.8;margin-top:2px">{{ l.code }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Motion effort</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--color-text)">
+        <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3">
+          <div onClick="{{ t.pick }}" style="cursor:pointer;padding:14px;background:{{ t.bg }};color:{{ t.fg }};border-right:1px solid var(--color-text)">
+            <div style="font-weight:700">{{ t.label }}</div>
+            <div style="font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:6px">{{ t.cost }} <span style="font-size:12px;font-weight:600">credits</span></div>
+            <div style="font-size:12px;margin-top:2px;opacity:.85">{{ t.desc }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <sc-if value="{{ err402 }}" hint-placeholder-val="{{ false }}">
+      <div style="border:2px solid var(--color-accent);background:var(--color-accent-100);padding:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+        <div><b style="color:var(--color-accent-700)">402 · Insufficient credits</b><div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:4px">required {{ cost }} · available {{ credits }}</div></div>
+        <button class="btn btn-primary" onClick="{{ goTopup }}">Top up credits</button>
+      </div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <button class="btn btn-primary" disabled="{{ genDisabled }}" onClick="{{ generate }}" style="font-size:16px;padding:16px 28px;min-width:220px">Generate video · {{ cost }} cr</button>
+      <span style="font-size:13px;color:var(--color-neutral-700)">{{ genReason }}</span>
+    </div>
+  </div>
+</section>
+<section style="padding:32px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0">
+  <sc-for list="{{ pipelineSteps }}" as="p" hint-placeholder-count="5">
+    <div style="padding:16px 20px 16px 0;border-top:2px solid var(--color-text)"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-accent-700)">{{ p.n }}</div><div style="font-weight:800;font-size:18px;margin:6px 0 4px">{{ p.t }}</div><div style="font-size:13px;color:var(--color-neutral-700);line-height:1.4">{{ p.d }}</div></div>
+  </sc-for>
+</section>
+</sc-if>
+
+<!-- ============ JOBS LIBRARY ============ -->
+<sc-if value="{{ isJobs }}" hint-placeholder-val="{{ false }}">
+<section style="padding:48px 0 24px;border-bottom:2px solid var(--color-text);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+  <div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">02 / LIBRARY</div><h1 style="font-weight:900;font-size:56px;letter-spacing:-.04em;margin:8px 0 0;line-height:1">Jobs</h1></div>
+  <button class="btn btn-primary" onClick="{{ goCreate }}">New video</button>
+</section>
+<section style="display:flex;gap:24px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--color-divider)">
+  <sc-for list="{{ filterGroups }}" as="g" hint-placeholder-count="3">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;width:70px">{{ g.label }}</span>
+      <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3">
+        <span onClick="{{ o.pick }}" style="cursor:pointer;padding:4px 10px;font-size:12px;font-weight:600;border:1px solid var(--color-text);background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</span>
+      </sc-for>
+    </div>
+  </sc-for>
+</section>
+<sc-if value="{{ hasRows }}" hint-placeholder-val="{{ true }}">
+<section>
+  <sc-for list="{{ rows }}" as="j" hint-placeholder-count="4">
+    <div onClick="{{ j.open }}" style="cursor:pointer;display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--color-divider)" style-hover="background:var(--color-surface)">
+      <div style="aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#6B7878 0 6px,#4A5656 6px 12px);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#F4EBC3">{{ j.thumb }}</div>
+      <div style="min-width:0"><div style="font-weight:700;font-size:17px;line-height:1.25">{{ j.topic }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700);margin-top:6px">{{ j.id }} · {{ j.lang }} · {{ j.tier }} · {{ j.created }}</div></div>
+      <span style="padding:5px 12px;font-size:12px;font-weight:700;background:{{ j.pill.bg }};color:{{ j.pill.fg }};white-space:nowrap">{{ j.pill.label }}</span>
+    </div>
+  </sc-for>
+</section>
+</sc-if>
+<sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+<section style="padding:80px 0;border-bottom:1px solid var(--color-divider)"><div style="font-weight:800;font-size:28px">No jobs match.</div><p style="color:var(--color-neutral-700)">Clear the filters or create a new video.</p><button class="btn btn-primary" onClick="{{ goCreate }}">Create a video</button></section>
+</sc-if>
+</sc-if>
+
+<!-- ============ JOB DETAIL ============ -->
+<sc-if value="{{ isJob }}" hint-placeholder-val="{{ false }}">
+<section style="padding:40px 0 24px;border-bottom:2px solid var(--color-text)">
+  <div style="font-size:13px;margin-bottom:16px"><a href="#" onClick="{{ goJobs }}">← All jobs</a></div>
+  <div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <h1 style="font-weight:900;font-size:clamp(30px,4vw,52px);letter-spacing:-.03em;line-height:1.02;margin:0;max-width:820px">{{ job.topic }}</h1>
+    <span style="padding:8px 16px;font-weight:800;font-size:14px;background:{{ job.pill.bg }};color:{{ job.pill.fg }}">{{ job.pill.label }}</span>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:0;margin-top:24px;border:1px solid var(--color-divider)">
+    <sc-for list="{{ job.meta }}" as="m" hint-placeholder-count="6">
+      <div style="padding:8px 14px;border-right:1px solid var(--color-divider);min-width:100px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--color-neutral-700)">{{ m.k }}</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:2px">{{ m.v }}</div></div>
+    </sc-for>
+  </div>
+</section>
+
+<!-- stage tracker -->
+<section style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:2px solid var(--color-text);overflow-x:auto">
+  <sc-for list="{{ job.stages }}" as="s" hint-placeholder-count="5">
+    <div style="padding:16px 16px 16px 0;position:relative;min-width:130px;border-top:6px solid {{ s.bar }};margin-top:-1px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-neutral-700)">{{ s.n }}</div>
+      <div style="font-weight:800;font-size:16px;margin:4px 0;color:{{ s.fg }}">{{ s.label }}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ s.fg }};animation:{{ s.anim }}">{{ s.sub }}</div>
+    </div>
+  </sc-for>
+</section>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:0">
+<div style="padding:32px 32px 32px 0;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;gap:28px">
+
+  <sc-if value="{{ job.isRunning }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">What's happening · <span style="font-family:'JetBrains Mono',monospace;font-weight:500">{{ job.elapsed }} elapsed</span></div>
+      <div style="border:2px solid var(--color-text);padding:20px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:8px">script.hook</div>
+        <div style="font-size:22px;font-weight:700;line-height:1.3;min-height:58px"><sc-if value="{{ job.hasHook }}" hint-placeholder-val="{{ false }}">{{ job.hook }}<span style="display:inline-block;width:10px;height:22px;background:var(--color-accent);vertical-align:-3px;margin-left:3px;animation:blink 1s infinite"></span></sc-if><sc-if value="{{ job.noHook }}" hint-placeholder-val="{{ true }}"><span style="color:var(--color-neutral-500)">Waiting for the script stage…</span></sc-if></div>
+        <div style="margin-top:16px;font-size:12px;font-weight:700;color:var(--color-neutral-700)">scene_plan.scenes · {{ job.sceneCount }}</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">
+          <sc-for list="{{ job.sceneTiles }}" as="t" hint-placeholder-count="4">
+            <div style="aspect-ratio:9/12;background:{{ t.bg }};background-size:40px 100%;animation:{{ t.anim }};display:flex;align-items:flex-end;padding:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:{{ t.fg }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--color-neutral-700);margin:10px 0 0">Polling GET /jobs/:id every 2s. Times are real elapsed time; no percentage is estimated.</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ job.showVideo }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Result</div>
+      <div style="aspect-ratio:16/9;background:#070D0D;position:relative;display:flex;align-items:center;justify-content:center">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#151D1D 0 14px,#F4EBC3 14px 28px)"></div>
+        <div style="position:relative;width:72px;height:72px;background:var(--color-accent);display:flex;align-items:center;justify-content:center"><div style="border-left:22px solid #070D0D;border-top:13px solid transparent;border-bottom:13px solid transparent;margin-left:6px"></div></div>
+        <div style="position:absolute;left:14px;bottom:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#4A5656">video placeholder · GET /jobs/{{ job.id }}/result</div>
+      </div>
+      <div style="margin-top:12px;font-size:13px"><b>Hook:</b> {{ job.hook }}</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ job.isFailed }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-accent);background:var(--color-accent-100);padding:24px">
+      <div style="font-weight:900;font-size:28px;color:var(--color-accent-700)">Job failed</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin:12px 0">error_stage: {{ job.errorStage }}<br>error_reason: {{ job.errorReason }}</div>
+      <button class="btn btn-primary" onClick="{{ retry }}">Retry as new job</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ job.isCancelled }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-neutral-500);background:var(--color-surface);padding:24px;color:var(--color-neutral-700)"><div style="font-weight:900;font-size:24px">Cancelled</div><p style="margin:8px 0 0">This job was cancelled and will not continue.</p></div>
+  </sc-if>
+  <sc-if value="{{ job.isPubFailed }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-accent);background:var(--color-accent-100);padding:24px">
+      <div style="font-weight:900;font-size:24px;color:var(--color-accent-700)">Publish failed</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin:12px 0">publish_error: {{ job.publishError }}</div>
+      <button class="btn btn-primary" onClick="{{ publish }}">Retry publish</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ job.isHandoff }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#005066;color:#F4EBC3;padding:28px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#B4E768">STATUS · manual_handoff</div>
+      <div style="font-weight:900;font-size:34px;letter-spacing:-.03em;line-height:1.05;margin:8px 0 16px">Manual handoff — not automatically published</div>
+      <div style="border-top:1px solid #A9B3A9;padding-top:14px;display:grid;gap:8px;font-size:15px">
+        <sc-for list="{{ job.handoff }}" as="h" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:110px 1fr;gap:12px"><span style="color:#B4E768;font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px">{{ h.k }}</span><span>{{ h.v }}</span></div></sc-for>
+      </div>
+      <button class="btn btn-primary" onClick="{{ download }}" style="margin-top:20px">Download handoff package</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ job.isPublished }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-text);padding:24px"><div style="font-weight:900;font-size:24px">Published</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:8px">published_at: {{ job.publishedAt }}</div></div>
+  </sc-if>
+  <sc-if value="{{ job.isPublishing }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-text);padding:24px;display:flex;gap:14px;align-items:center"><span style="width:12px;height:12px;background:var(--color-accent);animation:pulse 1s infinite"></span><b>Publishing… waiting for the backend result.</b></div>
+  </sc-if>
+</div>
+
+<div style="padding:32px 0 32px 32px;display:flex;flex-direction:column;gap:28px">
+
+  <sc-if value="{{ job.hasReport }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-text)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:2px solid var(--color-text)"><b style="text-transform:uppercase;font-size:13px;letter-spacing:.06em">Quality report</b><span style="padding:4px 12px;font-weight:800;font-size:12px;background:{{ job.report.bg }};color:{{ job.report.fg }}">{{ job.report.verdict }}</span></div>
+      <sc-for list="{{ job.report.rows }}" as="r" hint-placeholder-count="3">
+        <div style="display:flex;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--color-divider);font-size:14px"><span>{{ r.k }}</span><span style="font-family:'JetBrains Mono',monospace">{{ r.v }}</span></div>
+      </sc-for>
+      <sc-if value="{{ job.report.hasReasons }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 18px;font-size:13px;color:var(--color-accent-700)"><sc-for list="{{ job.report.reasons }}" as="x" hint-placeholder-count="1"><div>• {{ x }}</div></sc-for></div></sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ job.canApprove }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-text);padding:20px">
+      <b style="text-transform:uppercase;font-size:13px;letter-spacing:.06em">Approve</b>
+      <div class="field" style="margin-top:12px"><label style="font-size:13px;font-weight:600">Approver name or email</label><input class="input" placeholder="you@company.com" value="{{ approver }}" onChange="{{ setApprover }}" style="width:100%;box-sizing:border-box"></div>
+      <button class="btn btn-primary" onClick="{{ approve }}" disabled="{{ approveDisabled }}" style="margin-top:14px">Approve video</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ job.hasApproval }}" hint-placeholder-val="{{ false }}">
+    <div style="border:2px solid var(--color-text);padding:20px">
+      <b style="text-transform:uppercase;font-size:13px;letter-spacing:.06em">Approval receipt</b>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin:12px 0;line-height:1.7">approved_by: {{ job.approvedBy }}<br>approved_at: {{ job.approvedAt }}</div>
+      <sc-if value="{{ job.canPublish }}" hint-placeholder-val="{{ false }}"><button class="btn btn-primary" onClick="{{ publish }}">Publish</button></sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ job.canCancel }}" hint-placeholder-val="{{ false }}">
+    <div><button class="btn btn-secondary" onClick="{{ askCancel }}">{{ job.cancelLabel }}</button></div>
+  </sc-if>
+
+  <div>
+    <div onClick="{{ toggleHist }}" style="cursor:pointer;display:flex;justify-content:space-between;border-bottom:2px solid var(--color-text);padding-bottom:10px;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.06em"><span>Stage history</span><span>{{ histToggle }}</span></div>
+    <sc-if value="{{ histOpen }}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{ job.history }}" as="h" hint-placeholder-count="3">
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-divider);font-family:'JetBrains Mono',monospace;font-size:13px"><span>{{ h.status }}</span><span style="color:var(--color-neutral-700)">{{ h.at }}</span></div>
+      </sc-for>
+    </sc-if>
+  </div>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ ORCHESTRA ============ -->
+<sc-if value="{{ isOrch }}" hint-placeholder-val="{{ false }}">
+<section style="padding:48px 0 24px;border-bottom:2px solid var(--color-text);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+  <div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">03 / AI ORCHESTRA</div><h1 style="font-weight:900;font-size:56px;letter-spacing:-.04em;margin:8px 0 0;line-height:1">Provider chains</h1>
+  <p style="max-width:560px;margin:12px 0 0;color:var(--color-neutral-800)">Each stage tries its providers in order. If one fails, the next takes over and the job continues.</p></div>
+  <button class="btn btn-primary" onClick="{{ replay }}">{{ replayLabel }}</button>
+</section>
+<section style="display:flex;gap:20px;flex-wrap:wrap;padding:14px 0;font-size:12px;font-weight:600;border-bottom:1px solid var(--color-divider)">
+  <span style="display:flex;gap:6px;align-items:center"><i style="width:14px;height:14px;background:var(--color-accent);display:inline-block"></i>Active primary</span>
+  <span style="display:flex;gap:6px;align-items:center"><i style="width:14px;height:14px;background:var(--color-neutral-400);display:inline-block"></i>Configured fallback</span>
+  <span style="display:flex;gap:6px;align-items:center"><i style="width:12px;height:12px;border:2px dashed var(--color-neutral-600);display:inline-block"></i>Not configured</span>
+  <span style="display:flex;gap:6px;align-items:center"><i style="width:14px;height:14px;background:#005066;display:inline-block"></i>Failed (replay only)</span>
+</section>
+<section style="display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));overflow-x:auto;border-bottom:2px solid var(--color-text)">
+  <sc-for list="{{ orchestra }}" as="c" hint-placeholder-count="5">
+    <div style="padding:20px 16px 24px 0;border-right:1px solid var(--color-divider);margin-right:16px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-neutral-700)">{{ c.n }}</div>
+      <div style="font-weight:900;font-size:22px;letter-spacing:-.02em;margin:4px 0 16px">{{ c.stage }}</div>
+      <sc-for list="{{ c.nodes }}" as="p" hint-placeholder-count="3">
+        <div style="margin-bottom:6px">
+          <div style="padding:12px;background:{{ p.bg }};color:{{ p.fg }};border:{{ p.border }};transition:all .3s cubic-bezier(.16,1,.3,1);animation:{{ p.anim }}">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500">{{ p.name }}</div>
+            <div style="font-size:11px;margin-top:2px;opacity:.9">{{ p.sub }}</div>
+          </div>
+          <div style="height:16px;display:flex;align-items:center;padding-left:14px;font-size:14px;color:{{ p.arrow }};font-weight:800">↓</div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+</section>
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;padding-top:24px">
+  <sc-for list="{{ sysFlags }}" as="f" hint-placeholder-count="2">
+    <div style="padding:16px 24px 16px 0;border-top:1px solid var(--color-divider)"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-neutral-700)">{{ f.k }}</div><div style="font-weight:800;font-size:20px;margin-top:4px">{{ f.v }}</div></div>
+  </sc-for>
+</section>
+<p style="font-size:12px;color:var(--color-neutral-700);max-width:640px">Chains and configured state come from GET /providers/status. The reroute replay uses sample data. Live reroute detection needs per-attempt events from the backend.</p>
+</sc-if>
+
+<!-- ============ ANALYTICS ============ -->
+<sc-if value="{{ isAnalytics }}" hint-placeholder-val="{{ false }}">
+<section style="padding:48px 0 24px;border-bottom:2px solid var(--color-text)"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">04 / ANALYTICS</div><h1 style="font-weight:900;font-size:56px;letter-spacing:-.04em;margin:8px 0 0;line-height:1">Overview</h1></section>
+<div style="background:var(--color-surface);border-bottom:1px solid var(--color-divider);padding:12px 16px;font-size:13px;font-weight:600;margin-top:16px;border-left:6px solid var(--color-text)">Internal workflow metrics only — no Qoneqt viewership data available</div>
+<section style="display:grid;grid-template-columns:minmax(220px,1fr) 2fr;gap:40px;padding:32px 0;align-items:start">
+  <div><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">total_jobs</div><div style="font-weight:900;font-size:120px;letter-spacing:-.05em;line-height:1">{{ totalJobs }}</div></div>
+  <div>
+    <div style="display:flex;height:48px;border:2px solid var(--color-text)">
+      <sc-for list="{{ statusBars }}" as="b" hint-placeholder-count="4"><div style="flex:{{ b.count }};background:{{ b.bg }};border-right:1px solid #070D0D" title="{{ b.label }}"></div></sc-for>
+    </div>
+    <div style="margin-top:8px">
+      <sc-for list="{{ statusBars }}" as="b" hint-placeholder-count="4">
+        <div style="display:grid;grid-template-columns:20px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)"><i style="width:14px;height:14px;background:{{ b.bg }};display:inline-block"></i><span style="font-family:'JetBrains Mono',monospace;font-size:13px">{{ b.label }}</span><b style="font-size:18px">{{ b.count }}</b></div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- ============ CREDITS ============ -->
+<sc-if value="{{ isCredits }}" hint-placeholder-val="{{ false }}">
+<section style="padding:48px 0 24px;border-bottom:2px solid var(--color-text)"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">05 / CREDITS</div><h1 style="font-weight:900;font-size:56px;letter-spacing:-.04em;margin:8px 0 0;line-height:1">Credits & billing</h1></section>
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0">
+  <div style="padding:32px 32px 32px 0;border-right:1px solid var(--color-divider)">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Balance</div>
+    <div style="font-weight:900;font-size:140px;letter-spacing:-.05em;line-height:1;color:var(--color-accent)">{{ credits }}</div>
+    <button class="btn btn-primary" onClick="{{ openTopup }}" style="margin-top:16px;min-width:200px">Top up</button>
+    <p style="font-size:12px;color:var(--color-neutral-700);max-width:360px;margin-top:16px">Payment is handled by Razorpay Checkout. This app never sees card details.</p>
+  </div>
+  <div style="padding:32px 0 32px 32px">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">cost_by_tier</div>
+    <table class="table" style="width:100%"><thead><tr><th style="text-align:left">Tier</th><th style="text-align:right">Credits</th></tr></thead><tbody>
+      <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><tr><td>{{ t.label }}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace">{{ t.cost }}</td></tr></sc-for>
+    </tbody></table>
+  </div>
+</section>
+</sc-if>
+
+<!-- ============ SETTINGS ============ -->
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<section style="padding:48px 0 24px;border-bottom:2px solid var(--color-text)"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--color-neutral-700)">06 / SETTINGS</div><h1 style="font-weight:900;font-size:56px;letter-spacing:-.04em;margin:8px 0 0;line-height:1">Settings</h1></section>
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0">
+  <div style="padding:32px 32px 32px 0;border-right:1px solid var(--color-divider)">
+    <b style="text-transform:uppercase;font-size:13px;letter-spacing:.06em">API key</b>
+    <sc-if value="{{ authEnabled }}" hint-placeholder-val="{{ true }}">
+      <p style="font-size:14px;color:var(--color-neutral-800)">Backend auth is on. The key is kept in this browser and sent as a Bearer token on every mutating call. It is never displayed back.</p>
+      <div class="field"><input class="input" type="password" placeholder="Paste key" value="{{ apiKey }}" onChange="{{ setKey }}" style="width:100%;box-sizing:border-box"></div>
+      <div style="margin-top:8px;font-size:12px;font-weight:600">{{ keyState }}</div>
+    </sc-if>
+    <sc-if value="{{ authOff }}" hint-placeholder-val="{{ false }}"><p style="font-size:14px">Backend auth is off. No key needed.</p></sc-if>
+  </div>
+  <div style="padding:32px 0 32px 32px">
+    <b style="text-transform:uppercase;font-size:13px;letter-spacing:.06em">Defaults</b>
+    <p style="font-size:14px;color:var(--color-neutral-800)">Stored locally. Pre-fills the Create screen.</p>
+    <div style="font-size:12px;font-weight:700;margin:16px 0 6px">Language</div>
+    <div style="display:flex;border:2px solid var(--color-text)"><sc-for list="{{ langs }}" as="l" hint-placeholder-count="3"><div onClick="{{ l.pick }}" style="cursor:pointer;flex:1;padding:10px 14px;font-weight:700;font-size:14px;background:{{ l.bg }};color:{{ l.fg }}">{{ l.label }}</div></sc-for></div>
+    <div style="font-size:12px;font-weight:700;margin:16px 0 6px">Motion tier</div>
+    <div style="display:flex;border:2px solid var(--color-text)"><sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><div onClick="{{ t.pick }}" style="cursor:pointer;flex:1;padding:10px 14px;font-weight:700;font-size:14px;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</div></sc-for></div>
+  </div>
+</section>
+</sc-if>
+</main>
+
+<!-- cancel dialog -->
+<sc-if value="{{ cancelOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--color-bg);border:2px solid var(--color-text);padding:28px;max-width:440px;width:100%;box-shadow:var(--shadow-lg)">
+    <div style="font-weight:900;font-size:26px;letter-spacing:-.02em">Cancel this job?</div>
+    <p style="color:var(--color-neutral-800)">The pipeline stops at the current stage. Credits already spent are not refunded.</p>
+    <div style="display:flex;gap:12px;margin-top:20px"><button class="btn btn-primary" onClick="{{ doCancel }}">Cancel job</button><button class="btn btn-secondary" onClick="{{ closeDialogs }}">Keep running</button></div>
+  </div>
+</div>
+</sc-if>
+<!-- topup dialog -->
+<sc-if value="{{ topupOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(7,13,13,.6);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--color-bg);border:2px solid var(--color-text);padding:28px;max-width:460px;width:100%;box-shadow:var(--shadow-lg)">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--color-neutral-700)">POST /credits/create-order</div>
+    <div style="font-weight:900;font-size:26px;letter-spacing:-.02em;margin:4px 0 16px">Top up credits</div>
+    <div style="display:grid;gap:0;border:2px solid var(--color-text)">
+      <sc-for list="{{ packs }}" as="p" hint-placeholder-count="3">
+        <div onClick="{{ p.pick }}" style="cursor:pointer;display:flex;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--color-text);background:{{ p.bg }};color:{{ p.fg }};font-weight:700"><span>{{ p.credits }} credits</span><span style="font-family:'JetBrains Mono',monospace">{{ p.price }}</span></div>
+      </sc-for>
+    </div>
+    <div style="font-size:12px;color:var(--color-neutral-700);margin-top:10px">{{ payNote }}</div>
+    <div style="display:flex;gap:12px;margin-top:20px"><button class="btn btn-primary" onClick="{{ pay }}" disabled="{{ paying }}">{{ payLabel }}</button><button class="btn btn-secondary" onClick="{{ closeDialogs }}">Close</button></div>
+  </div>
+</div>
+</sc-if>
+
+</sc-if>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:24px;bottom:24px;z-index:60;background:#F4EBC3;color:#070D0D;padding:14px 20px;font-weight:600;font-size:14px;border-left:6px solid var(--color-accent)">{{ toast }}</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    route: 'landing', authed: false, email: '', password: '', loginErr: '', jobId: null, topic: '', lang: 'en', tier: 'balanced', credits: 42, now: Date.now(),
+    f: { status: 'all', lang: 'all', tier: 'all' }, approver: '', cancelOpen: false, topupOpen: false, pack: 1,
+    paying: false, apiKey: '', histOpen: true, toast: '', err402: false, submitted: false, replayIdx: -1, jobs: null
+  };
+  COST = { basic: 5, balanced: 12, max: 25 };
+  ORDER = ['queued', 'running_intelligence', 'running_generation', 'running_composition', 'running_validation', 'done'];
+  LABEL = { queued: 'Queued', running_intelligence: 'Intelligence', running_generation: 'Generation', running_composition: 'Composition', running_validation: 'Validation', done: 'Done', approved: 'Approved', publishing: 'Publishing', published: 'Published', publish_failed: 'Publish failed', manual_handoff: 'Manual handoff', failed: 'Failed', cancelled: 'Cancelled' };
+  HOOKS = ['Why does the cheapest chai stall never make you sick?', 'The 3-second rule vendors actually follow', 'Boiling is only half of the story.'];
+
+  mk(id, topic, language, tier, status, ago, extra) {
+    const t = Date.now() - ago * 60000, h = [{ status: 'queued', at: t }];
+    const seq = this.ORDER.slice(1);
+    const upto = status === 'failed' ? 3 : (this.ORDER.indexOf(status) >= 0 ? this.ORDER.indexOf(status) : 5);
+    for (let i = 0; i < upto; i++) h.push({ status: seq[i], at: t + (i + 1) * 14000 });
+    return Object.assign({ id, topic, language, tier, status, created: t, updated: t + 90000, history: h, hook: this.HOOKS[0], scenes: 6, live: false, approvedBy: null, approvedAt: null, publishedAt: null, publishError: null, errorStage: null, errorReason: null, lastAdv: Date.now() }, extra || {});
+  }
+  componentDidMount() {
+    try { const a = localStorage.getItem('ideafeed_auth'); if (a) this.setState({ authed: true, route: 'create', approver: a }); } catch (e) {}
+    const q = { passed: true, resolution: '1080 × 1920', duration: '38.4 s', audio: 'Present', reasons: [] };
+    this.setState({ jobs: [
+      this.mk('job_8f2a41', 'Why Indian street food vendors rarely get food poisoning', 'en', 'balanced', 'manual_handoff', 180, { approvedBy: 'asha@qoneqt.com', approvedAt: Date.now() - 150 * 60000, quality: q, note: { title: 'Why chai stalls stay safe', caption: 'The boiling trick nobody talks about. #streetfood #india', language: 'English', tier: 'Balanced' } }),
+      this.mk('job_71c9de', 'मानसून में घर को सीलन से कैसे बचाएं', 'hi', 'basic', 'done', 55, { quality: q }),
+      this.mk('job_3b07aa', 'Cricket pitch kaise banti hai, simple Hinglish mein', 'hinglish', 'max', 'done', 40, { quality: { passed: false, resolution: '720 × 1280', duration: '12.1 s', audio: 'Missing', reasons: ['Resolution below 1080p minimum', 'No audio track detected', 'Duration under 15 s'] } }),
+      this.mk('job_c40e19', 'How UPI actually moves money between banks', 'en', 'balanced', 'failed', 300, { errorStage: 'running_generation', errorReason: 'All image providers returned an error for scene 3' }),
+      this.mk('job_a95d02', 'Five habits of people who never miss a train', 'en', 'basic', 'cancelled', 420),
+      this.mk('job_e1186b', 'Tea vs coffee: what the research says', 'en', 'balanced', 'publish_failed', 600, { approvedBy: 'ravi@qoneqt.com', approvedAt: Date.now() - 580 * 60000, publishError: 'Handoff package could not be written: disk quota exceeded', quality: q })
+    ] });
+    this.timer = setInterval(() => this.tick(), 1000);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+  enter(em) { try { localStorage.setItem('ideafeed_auth', em); } catch (e) {} this.setState({ authed: true, route: 'create', approver: em, loginErr: '', password: '' }); }
+  tick() {
+    const jobs = (this.state.jobs || []).map(j => {
+      if (!j.live || this.ORDER.indexOf(j.status) < 0 || j.status === 'done') return j;
+      if (Date.now() - j.lastAdv < 3800) return j;
+      const nx = this.ORDER[this.ORDER.indexOf(j.status) + 1], at = Date.now();
+      return Object.assign({}, j, { status: nx, updated: at, lastAdv: at, history: j.history.concat({ status: nx, at }), quality: nx === 'done' ? { passed: true, resolution: '1080 × 1920', duration: '36.8 s', audio: 'Present', reasons: [] } : j.quality });
+    });
+    let ri = this.state.replayIdx;
+    if (ri >= 0) { ri += 1; if (ri > 12) ri = -1; }
+    this.setState({ now: Date.now(), jobs, replayIdx: ri });
+  }
+  upd(id, fn) { this.setState(s => ({ jobs: s.jobs.map(j => j.id === id ? Object.assign({}, j, fn(j), { updated: Date.now() }) : j) })); }
+  toast(m) { this.setState({ toast: m }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2600); }
+  fmt(ts) { return new Date(ts).toISOString().slice(0, 19).replace('T', ' '); }
+  hms(ms) { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + 'm ' + String(s % 60).padStart(2, '0') + 's'; }
+  pill(st) {
+    const m = { done: ['#F4EBC3', '#070D0D'], approved: ['#F4EBC3', '#070D0D'], published: ['#F4EBC3', '#070D0D'], manual_handoff: ['#0C2B34', '#070D0D', 1], failed: ['#005066', '#F4EBC3'], publish_failed: ['#005066', '#F4EBC3'], cancelled: ['#2A3434', '#F4EBC3'], queued: ['#151D1D', '#F4EBC3'], publishing: ['#C4EA7F', '#070D0D'] };
+    const c = m[st] || ['#D3EE96', '#070D0D'];
+    return { label: this.LABEL[st] || st, bg: c[0], fg: c[1] };
+  }
+  isRun(s) { return s === 'queued' || s.indexOf('running_') === 0; }
+  segs(list, cur, set) { return list.map(o => Object.assign({}, o, { bg: o.v === cur ? '#F4EBC3' : 'transparent', fg: o.v === cur ? '#070D0D' : '#F4EBC3', pick: () => set(o.v) })); }
+
+  renderVals() {
+    const s = this.state, jobs = s.jobs || [], r = s.route;
+    const go = (route, extra) => () => this.setState(Object.assign({ route, cancelOpen: false, topupOpen: false }, extra || {}));
+    const active = jobs.find(j => this.isRun(j.status) && j.live);
+    const cost = this.COST[s.tier], short = s.credits < cost, empty = !s.topic.trim();
+    const navDefs = [['Create', 'create'], ['Jobs', 'jobs'], ['Orchestra', 'orchestra'], ['Analytics', 'analytics'], ['Credits', 'credits'], ['Settings', 'settings']];
+    const cur = r === 'job' ? 'jobs' : r;
+    const nav = navDefs.map(([label, k]) => ({ label, go: go(k), bg: cur === k ? '#F4EBC3' : 'transparent', fg: cur === k ? '#070D0D' : '#F4EBC3' }));
+    const setLang = v => this.setState({ lang: v }), setTier = v => this.setState({ tier: v });
+    const langs = this.segs([{ v: 'en', label: 'English', code: 'en' }, { v: 'hi', label: 'हिन्दी', code: 'hi' }, { v: 'hinglish', label: 'Hinglish', code: 'hinglish' }], s.lang, setLang);
+    const tiers = this.segs([{ v: 'basic', label: 'Basic', desc: 'Still frames, light pan', cost: 5 }, { v: 'balanced', label: 'Balanced', desc: 'Ken-Burns on every scene', cost: 12 }, { v: 'max', label: 'Max', desc: 'Full motion render', cost: 25 }], s.tier, setTier);
+    const generate = () => {
+      if (s.submitted || empty) return;
+      if (short) { this.setState({ err402: true }); return; }
+      const id = 'job_' + Math.random().toString(16).slice(2, 8), key = 'idem_' + Date.now();
+      const j = this.mk(id, s.topic.trim(), s.lang, s.tier, 'queued', 0, { live: true, lastAdv: Date.now(), idempotencyKey: key, hook: this.HOOKS[Math.floor(Math.random() * 3)] });
+      this.setState({ jobs: [j].concat(jobs), credits: s.credits - cost, route: 'job', jobId: id, topic: '', err402: false, submitted: false });
+    };
+    const genReason = empty ? 'Enter a topic to continue.' : short ? 'Not enough credits: ' + cost + ' required, ' + s.credits + ' available.' : 'Each submit carries an Idempotency-Key, so double-clicks create one job.';
+    // job detail
+    const j = jobs.find(x => x.id === s.jobId);
+    let job = {};
+    if (j) {
+      const st = j.status, runIdx = this.ORDER.indexOf(st), failIdx = st === 'failed' ? 3 : -1;
+      const stNames = ['Queued', 'Intelligence', 'Generation', 'Composition', 'Validation'];
+      const hmap = {}; j.history.forEach(h => hmap[h.status] = h.at);
+      const stages = stNames.map((label, i) => {
+        const key = this.ORDER[i], at = hmap[key], next = this.ORDER[i + 1], end = hmap[next] || (st === 'done' || runIdx > i ? hmap.done : null);
+        let state = 'pending';
+        if (st === 'failed') state = i < failIdx ? 'done' : i === failIdx ? 'failed' : 'pending';
+        else if (st === 'cancelled') state = at && hmap[next] ? 'done' : at ? 'failed' : 'pending';
+        else if (runIdx < 0 || runIdx >= 5) state = 'done'; else state = i < runIdx ? 'done' : i === runIdx ? 'active' : 'pending';
+        const dur = at && (hmap[next] || state === 'active') ? this.hms((hmap[next] || s.now) - at) : state === 'done' ? '0m 14s' : '—';
+        return { n: '0' + (i + 1), label, bar: state === 'done' ? '#F4EBC3' : state === 'active' ? '#B4E768' : state === 'failed' ? '#005066' : '#2A3434', fg: state === 'pending' ? '#8A9696' : '#F4EBC3', sub: state === 'active' ? dur + ' · running' : state === 'failed' ? 'stopped' : state === 'pending' ? 'waiting' : dur, anim: state === 'active' ? 'pulse 1.4s infinite' : 'none' };
+      });
+      const isRunning = this.isRun(st);
+      const done = ['done', 'approved', 'publishing', 'manual_handoff', 'published', 'publish_failed'].indexOf(st) >= 0;
+      const q = j.quality, hasHook = runIdx >= 2 || done;
+      const tiles = Array.from({ length: 4 }, (_, i) => {
+        const ready = runIdx > 2 || (runIdx === 2 && (s.now - j.lastAdv) / 1000 > i * 0.9);
+        return { bg: ready ? 'repeating-linear-gradient(135deg,#6B7878 0 6px,#4A5656 6px 12px)' : 'linear-gradient(90deg,#2A3434 0,#070D0D 50%,#2A3434 100%)', anim: ready ? 'none' : 'sweep 1s linear infinite', fg: '#F4EBC3', label: ready ? 'scene ' + (i + 1) : '' };
+      });
+      job = {
+        id: j.id, topic: j.topic, pill: this.pill(st), isRunning, isFailed: st === 'failed', isCancelled: st === 'cancelled', isPubFailed: st === 'publish_failed',
+        isHandoff: st === 'manual_handoff', isPublished: st === 'published', isPublishing: st === 'publishing', showVideo: done,
+        meta: [['id', j.id], ['language', j.language], ['motion_tier', j.tier], ['created_at', this.fmt(j.created)], ['updated_at', this.fmt(j.updated)]].map(a => ({ k: a[0], v: a[1] })),
+        stages, elapsed: this.hms(s.now - j.created), hasHook, noHook: !hasHook, hook: j.hook, sceneCount: runIdx >= 2 ? j.scenes : '—', sceneTiles: tiles,
+        errorStage: j.errorStage, errorReason: j.errorReason, publishError: j.publishError, publishedAt: j.publishedAt && this.fmt(j.publishedAt),
+        handoff: j.note ? [['Title', j.note.title], ['Caption', j.note.caption], ['Language', j.note.language], ['Motion tier', j.note.tier]].map(a => ({ k: a[0], v: a[1] })) : [{ k: 'Note', v: 'Title and caption suggestion will appear here.' }],
+        hasReport: !!q && done,
+        report: q ? { verdict: q.passed ? 'PASSED' : 'FAILED', bg: q.passed ? '#B4E768' : '#005066', fg: q.passed ? '#070D0D' : '#F4EBC3', rows: [{ k: 'Resolution', v: q.resolution }, { k: 'Duration', v: q.duration }, { k: 'Audio track', v: q.audio }], hasReasons: q.reasons.length > 0, reasons: q.reasons } : {},
+        canApprove: st === 'done', hasApproval: !!j.approvedBy, approvedBy: j.approvedBy, approvedAt: j.approvedAt && this.fmt(j.approvedAt), canPublish: st === 'approved' || st === 'publish_failed' && false,
+        canCancel: !['done', 'approved', 'manual_handoff', 'published', 'failed', 'cancelled', 'publish_failed'].includes(st) || st === 'done', cancelLabel: 'Cancel job',
+        history: j.history.concat(st === 'failed' || ['done'].indexOf(st) >= 0 && false ? [] : [], this.ORDER.indexOf(st) < 0 ? [{ status: st, at: j.updated }] : []).map(h => ({ status: h.status, at: this.fmt(h.at) }))
+      };
+      job.canCancel = !['approved', 'manual_handoff', 'published', 'failed', 'cancelled', 'publish_failed'].includes(st);
+    }
+    // library
+    const sg = ['all', 'done', 'manual_handoff', 'failed', 'cancelled'].map(v => ({ v, label: v === 'all' ? 'All' : this.LABEL[v] }));
+    const fset = k => v => this.setState({ f: Object.assign({}, s.f, { [k]: v }) });
+    const grp = (label, k, list) => ({ label, opts: this.segs(list, s.f[k], fset(k)) });
+    const filterGroups = [grp('Status', 'status', sg), grp('Language', 'lang', ['all', 'en', 'hi', 'hinglish'].map(v => ({ v, label: v === 'all' ? 'All' : v }))), grp('Tier', 'tier', ['all', 'basic', 'balanced', 'max'].map(v => ({ v, label: v === 'all' ? 'All' : v })))];
+    const rows = jobs.filter(x => (s.f.status === 'all' || x.status === s.f.status) && (s.f.lang === 'all' || x.language === s.f.lang) && (s.f.tier === 'all' || x.tier === s.f.tier))
+      .sort((a, b) => b.created - a.created).map(x => ({ id: x.id, topic: x.topic, lang: x.language, tier: x.tier, created: this.fmt(x.created), pill: this.pill(x.status), thumb: x.status === 'failed' || x.status === 'cancelled' ? 'no result' : 'thumbnail', open: () => this.setState({ route: 'job', jobId: x.id }) }));
+    // orchestra
+    const chains = [['Script', [['Gemini', 1, 1], ['Groq', 1, 0], ['OpenRouter', 0, 0]]], ['Image', [['Pollinations', 1, 1], ['Hugging Face', 1, 0], ['Stability', 0, 0]]], ['Voice', [['ElevenLabs', 0, 0], ['Edge TTS', 1, 1], ['gTTS', 1, 0]]], ['Captions', [['Whisper API', 1, 1], ['Local Whisper', 1, 0]]], ['Motion', [['Runway', 0, 0], ['FFmpeg Ken-Burns', 1, 1]]]];
+    const ri = s.replayIdx;
+    const orchestra = chains.map(([stage, ns], ci) => {
+      const reached = ri >= ci * 2 + 1; // replay: image stage (ci=1) primary fails
+      let activeName = null;
+      const nodes = ns.map(([name, conf, act], ni) => {
+        let bg = '#2A3434', fg = '#F4EBC3', border = '2px solid transparent', sub = 'Fallback · idle', anim = 'none', arrow = '#6B7878';
+        if (!conf) { bg = 'transparent'; border = '2px dashed #8A9696'; fg = '#A9B3A9'; sub = 'Not configured'; }
+        else if (act) { bg = '#B4E768'; fg = '#070D0D'; sub = 'Active primary'; arrow = '#F4EBC3'; }
+        if (ri >= 0 && ci === 1 && ri >= 3) {
+          if (ni === 0) { bg = '#005066'; fg = '#F4EBC3'; sub = 'Failed · rerouted'; anim = ri === 3 || ri === 4 ? 'pulse .4s 3' : 'none'; arrow = '#B4E768'; }
+          if (ni === 1) { bg = ri >= 5 ? '#B4E768' : '#2A3434'; fg = ri >= 5 ? '#070D0D' : '#F4EBC3'; sub = ri >= 5 ? 'Took over' : 'Fallback · idle'; }
+        }
+        if (ni === ns.length - 1) arrow = 'transparent';
+        return { name, sub, bg, fg, border, anim, arrow };
+      });
+      return { n: '0' + (ci + 1), stage, nodes };
+    });
+    const counts = {}; jobs.forEach(x => counts[x.status] = (counts[x.status] || 0) + 1);
+    const shade = { done: '#F4EBC3', manual_handoff: '#B4E768', failed: '#005066', cancelled: '#4A5656', publish_failed: '#8A9696', queued: '#2A3434', approved: '#A9B3A9', published: '#C9CDB5' };
+    const statusBars = Object.keys(counts).map(k => ({ label: k, count: counts[k], bg: shade[k] || '#B4E768' }));
+    const packsDef = [[20, '₹199'], [60, '₹499'], [150, '₹999']];
+    const packs = packsDef.map((p, i) => ({ credits: p[0], price: p[1], bg: s.pack === i ? '#F4EBC3' : 'transparent', fg: s.pack === i ? '#070D0D' : '#F4EBC3', pick: () => this.setState({ pack: i }) }));
+    const pickedPack = packsDef[s.pack];
+
+    return {
+      isLanding: r === 'landing', isLogin: r === 'login' || (!s.authed && r !== 'landing'), isApp: s.authed && r !== 'landing' && r !== 'login',
+      ctaLabel: s.authed ? 'Open app' : 'Sign in to start',
+      toLogin: () => this.setState({ route: s.authed ? 'create' : 'login', loginErr: '' }),
+      toLanding: e => { e && e.preventDefault && e.preventDefault(); this.setState({ route: 'landing' }); },
+      email: s.email, password: s.password, setEmail: e => this.setState({ email: e.target.value }), setPass: e => this.setState({ password: e.target.value }),
+      hasLoginErr: !!s.loginErr, loginErr: s.loginErr,
+      login: e => { e && e.preventDefault && e.preventDefault(); const em = s.email.trim();
+        if (!/^\S+@\S+\.\S+$/.test(em)) return this.setState({ loginErr: 'Enter a valid email address.' });
+        if (s.password.length < 6) return this.setState({ loginErr: 'Password must be at least 6 characters.' });
+        this.enter(em); },
+      demoLogin: () => this.enter('demo@ideafeed.ai'),
+      signOut: () => { try { localStorage.removeItem('ideafeed_auth'); } catch (e) {} this.setState({ authed: false, route: 'landing', password: '' }); },
+      lpStats: [['5', 'pipeline stages'], ['3', 'languages'], ['3', 'motion tiers'], ['0', 'auto-published without approval']].map(a => ({ v: a[0], l: a[1] })),
+      lpFeatures: [['01', 'Live job tracking', 'Every job shows its current stage with real elapsed time, the hook as it is written, and scene tiles as each image arrives.'], ['02', 'Provider fallback', 'Each stage tries its providers in order. If one fails, the next takes over and the job continues.'], ['03', 'Quality report', 'Resolution, duration and audio are checked before review. A failed check lists its reasons.'], ['04', 'Approval and handoff', 'You approve with your name or email. The handoff package carries the title, caption, language and tier.']].map(a => ({ n: a[0], t: a[1], d: a[2] })),
+      nav, hasActive: !!active, activeElapsed: active ? this.hms(s.now - active.created) : '', goActive: () => active && this.setState({ route: 'job', jobId: active.id }),
+      readyColor: '#F4EBC3', readyLabel: 'System ready', credits: s.credits,
+      goCreate: go('create'), goJobs: e => { e && e.preventDefault && e.preventDefault(); this.setState({ route: 'jobs' }); }, goCredits: go('credits'), goTopup: () => this.setState({ route: 'credits', topupOpen: true }),
+      isCreate: r === 'create', isJobs: r === 'jobs', isJob: r === 'job' && !!j, isOrch: r === 'orchestra', isAnalytics: r === 'analytics', isCredits: r === 'credits', isSettings: r === 'settings',
+      topic: s.topic, setTopic: e => this.setState({ topic: e.target.value, err402: false }), langs, tiers, cost, err402: s.err402 && short,
+      genDisabled: empty || (short && !s.err402), generate, genReason,
+      pipelineSteps: [['01', 'Intelligence', 'Writes the script hook and plans the scenes.'], ['02', 'Generation', 'Creates images, voice and captions per scene.'], ['03', 'Composition', 'Assembles the video with motion.'], ['04', 'Validation', 'Checks resolution, duration and audio.'], ['05', 'Review', 'You approve, then it is handed off.']].map(a => ({ n: a[0], t: a[1], d: a[2] })),
+      filterGroups, rows, hasRows: rows.length > 0, noRows: rows.length === 0,
+      job, approver: s.approver, setApprover: e => this.setState({ approver: e.target.value }), approveDisabled: !s.approver.trim(),
+      approve: () => { this.upd(j.id, () => ({ status: 'approved', approvedBy: s.approver.trim(), approvedAt: Date.now(), history: j.history.concat({ status: 'approved', at: Date.now() }) })); this.toast('Approved by ' + s.approver.trim()); },
+      publish: () => { const id = j.id; this.upd(id, x => ({ status: 'publishing', history: x.history.concat({ status: 'publishing', at: Date.now() }) })); setTimeout(() => { this.upd(id, x => ({ status: 'manual_handoff', note: { title: x.topic.split(' ').slice(0, 6).join(' '), caption: x.topic + ' #shorts', language: x.language, tier: x.tier }, history: x.history.concat({ status: 'manual_handoff', at: Date.now() }) })); }, 1800); },
+      download: () => this.toast('Handoff package downloading (manual_handoff_path)'),
+      retry: () => this.setState({ route: 'create', topic: j.topic, lang: j.language, tier: j.tier }),
+      askCancel: () => this.setState({ cancelOpen: true }), cancelOpen: s.cancelOpen,
+      doCancel: () => { this.upd(j.id, x => ({ status: 'cancelled', live: false, history: x.history.concat({ status: 'cancelled', at: Date.now() }) })); this.setState({ cancelOpen: false }); this.toast('Cancelled'); },
+      closeDialogs: () => this.setState({ cancelOpen: false, topupOpen: false }),
+      histOpen: s.histOpen, histToggle: s.histOpen ? 'Hide' : 'Show', toggleHist: () => this.setState({ histOpen: !s.histOpen }),
+      orchestra, replay: () => this.setState({ replayIdx: 0 }), replayLabel: ri >= 0 ? 'Replaying…' : 'Replay a reroute (sample)',
+      sysFlags: [{ k: 'Auth', v: 'Enabled' }, { k: 'MongoDB persistence', v: 'Not configured' }, { k: 'FFmpeg', v: 'Available' }],
+      totalJobs: jobs.length, statusBars,
+      openTopup: () => this.setState({ topupOpen: true }), topupOpen: s.topupOpen, packs, paying: s.paying, payLabel: s.paying ? 'Verifying payment…' : 'Pay ' + pickedPack[1],
+      payNote: 'Opens Razorpay Checkout. Payment is verified by POST /credits/verify-payment before credits are added.',
+      pay: () => { this.setState({ paying: true }); setTimeout(() => { this.setState(st => ({ paying: false, topupOpen: false, credits: st.credits + pickedPack[0] })); this.toast(pickedPack[0] + ' credits added'); }, 1400); },
+      authEnabled: true, authOff: false, apiKey: s.apiKey, setKey: e => this.setState({ apiKey: e.target.value }), keyState: s.apiKey ? 'Key saved in this browser' : 'No key set',
+      hasToast: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

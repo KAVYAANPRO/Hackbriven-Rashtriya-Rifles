@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* IdeaFeed dark palette layered over the Modernist tokens */
+:root {
+  --color-bg: #070d0d;
+  --color-surface: #111a1a;
+  --color-text: #f4ebc3;
+  --color-accent: #b4e768;
+  --color-accent-100: #0c2b34;
+  --color-accent-200: #123f4c;
+  --color-accent-300: #005066;
+  --color-accent-400: #b4e768;
+  --color-accent-500: #b4e768;
+  --color-accent-600: #c4ea7f;
+  --color-accent-700: #d3ee96;
+  --color-accent-800: #e4f4be;
+  --color-accent-900: #f2fadd;
+  --color-neutral-100: #0e1616;
+  --color-neutral-200: #151d1d;
+  --color-neutral-300: #2a3434;
+  --color-neutral-400: #4a5656;
+  --color-neutral-500: #6b7878;
+  --color-neutral-600: #8a9696;
+  --color-neutral-700: #a9b3a9;
+  --color-neutral-800: #c9cdb5;
+  --color-neutral-900: #e8e4c8;
+  --color-divider: color-mix(in srgb, #f4ebc3 40%, transparent);
+
+  --ink: #070d0d;
+  --teal: #005066;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+body { margin: 0; background: var(--color-bg); }
+a { color: var(--color-accent); text-decoration: none; }
+a:hover { color: var(--color-text); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes sweep { 0% { background-position: 0 0; } 100% { background-position: 40px 0; } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

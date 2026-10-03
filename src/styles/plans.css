@@ -1,0 +1,91 @@
+/* Subscription plans: Credits page, sidebar badge, checkout dialog. Prefix .pl- only. */
+
+/* ---- plans block ---- */
+.pl-plans { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+.pl-plans-head h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+.pl-plans-head p { margin-top: 4px; font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+.pl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+
+.pl-card { display: flex; flex-direction: column; gap: 14px; padding: 22px; min-width: 0; }
+.pl-card.is-reco { border-color: var(--accent); }
+.pl-card.is-current:not(.is-reco) { border-color: var(--line-2); }
+
+.pl-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 24px; }
+.pl-card-top h3 { font-size: 16px; font-weight: 600; color: var(--text); }
+
+.pl-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 5px; font-size: 12px; font-weight: 500; white-space: nowrap; border: 1px solid var(--line-2); background: var(--surface-2); color: var(--muted); }
+.pl-badge--reco { border-color: var(--accent); background: none; color: var(--accent); }
+.pl-badge--current { color: var(--text); }
+.pl-card.is-reco .pl-badge--current { border-color: var(--accent); }
+
+.pl-price { display: flex; align-items: baseline; gap: 8px; }
+.pl-price b { font-size: 34px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text); }
+.pl-price span { font-size: 13px; color: var(--faint); }
+.pl-blurb { font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+
+.pl-feats { list-style: none; margin: 0; padding: 14px 0 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 9px; }
+.pl-feats li { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; line-height: 1.4; color: var(--text); }
+.pl-feats .ic { flex: none; margin-top: 1px; color: var(--accent); }
+
+/* tier availability */
+.pl-tiers { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; margin-top: auto; }
+.pl-tier { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; row-gap: 2px; padding: 9px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.pl-tier:last-child { border-bottom: 0; }
+.pl-tier-n { display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
+.pl-tier-n .ic { color: var(--accent); flex: none; }
+.pl-tier-n b { font-weight: 600; }
+.pl-tier-c { font-size: 12px; color: var(--muted); }
+.pl-tier-note { grid-column: 1 / -1; padding-left: 22px; font-size: 12px; color: var(--faint); }
+.pl-tier.is-locked .pl-tier-n, .pl-tier.is-locked .pl-tier-c { color: var(--faint); }
+.pl-tier.is-locked .pl-tier-n .ic { color: var(--faint); }
+.pl-tier.is-locked .pl-tier-n b { font-weight: 500; }
+
+.pl-card-act { min-height: 38px; }
+
+/* ---- balance card additions ---- */
+.pl-bal-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+.pl-plan-pill { height: 22px; color: var(--text); }
+.can-make .pl-can-lock { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--faint); height: 27px; }
+.can-make .pl-can-lock .ic { flex: none; }
+.can-make .pl-can-locked > span { color: var(--faint); }
+
+/* ---- cost by tier additions ---- */
+.cost-n .pl-needs { display: inline-flex; align-items: center; gap: 5px; margin-top: 2px; color: var(--muted); }
+.cost-n .pl-needs .ic { flex: none; }
+.cost-rows > div.pl-row-locked .cost-n b,
+.cost-rows > div.pl-row-locked b.mono { color: var(--faint); }
+.cost-rows > div.pl-row-locked .cost-bar i { background: var(--line-2); }
+
+/* ---- sidebar credits card ---- */
+.pl-side-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.pl-side-plan { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--surface-2); color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0; line-height: 1; }
+.pl-side-up { align-self: flex-start; margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent; transition: text-decoration-color 0.15s; }
+.pl-side-up:hover { text-decoration-color: currentColor; }
+
+/* ---- checkout dialog ---- */
+.pl-modal { width: min(400px, 100%); }
+.pl-modal-price { display: flex; align-items: baseline; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.pl-modal-price b { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--text); }
+.pl-modal-price span { font-size: 13px; color: var(--faint); }
+.pl-modal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.pl-modal-list li { display: flex; align-items: flex-start; gap: 9px; font-size: 14px; line-height: 1.45; color: var(--muted); }
+.pl-modal-list li b { color: var(--text); font-weight: 600; }
+.pl-modal-list .ic { flex: none; margin-top: 2px; color: var(--accent); }
+
+/* ---- responsive ---- */
+@media (max-width: 1100px) {
+  .pl-grid { gap: 12px; }
+  .pl-card { padding: 18px; }
+}
+@media (max-width: 900px) {
+  .pl-grid { grid-template-columns: 1fr; }
+  .pl-tiers { margin-top: 0; }
+}
+@media (max-width: 480px) {
+  .pl-price b { font-size: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-side-up { transition: none; }
+}
