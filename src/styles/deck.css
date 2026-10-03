@@ -1,0 +1,89 @@
+/* Deck and presentation viewer styles */
+
+.deck-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-bg);
+}
+
+.deck-canvas {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  overflow: hidden;
+  position: relative;
+}
+
+.slide {
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.slide-content {
+  width: 100%;
+  height: 100%;
+  padding: var(--space-8);
+}
+
+.deck-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.deck-nav-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.deck-nav-btn:hover:not(:disabled) {
+  background: var(--color-surface-2);
+}
+
+.deck-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.slide-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  min-width: 60px;
+  justify-content: center;
+}
+
+.slide-current {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.slide-separator {
+  color: var(--color-text-faint);
+}
