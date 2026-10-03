@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { NAV, formatPrice, hms, periodLabel, planOf, tierName } from '../data.js';
+import { NAV, navFor, formatPrice, hms, periodLabel, planOf, tierName } from '../data.js';
 import { useNow, useStore } from '../store.jsx';
 import Icon from './Icon.jsx';
+import { LogoMark } from './Logo.jsx';
 import { ErrorState } from './common.jsx';
 import { CountUp } from './deck/parts.jsx';
 import { usePlanDialog } from './planDialogBus.js';
@@ -22,8 +23,9 @@ function ActiveChip({ job }) {
 
 function Sidebar() {
   const { route, go, credits, user, plan, pricing } = useStore();
+  const nav = navFor(user);
   const current = route === 'job' ? 'jobs' : route;
-  const index = Math.max(0, NAV.findIndex(([, k]) => k === current));
+  const index = Math.max(0, nav.findIndex(([, k]) => k === current));
   const email = (user && user.email) || '';
   const planInfo = planOf(pricing, plan);
   const level = credits != null && planInfo.credits ? Math.min(100, (credits / planInfo.credits) * 100) : 0;
@@ -31,13 +33,13 @@ function Sidebar() {
   return (
     <aside className="st-side">
       <button type="button" className="st-brand" onClick={() => go('create')}>
-        <span className="block-dot" />
+        <LogoMark size={22} />
         <span>IdeaFeed AI</span>
       </button>
 
       <nav className="st-nav" aria-label="Main" style={{ '--i': index }}>
         <i className="st-nav-ind" />
-        {NAV.map(([label, key], n) => (
+        {nav.map(([label, key], n) => (
           <button
             key={key}
             type="button"
@@ -86,9 +88,9 @@ function statusView(sys) {
 }
 
 function TopBar({ topRef }) {
-  const { route, jobs, credits, go, signOut, systemReady } = useStore();
+  const { route, jobs, credits, go, signOut, systemReady, user } = useStore();
   const active = jobs.find((j) => j.live);
-  const label = NAV.find(([, k]) => k === (route === 'job' ? 'jobs' : route));
+  const label = navFor(user).find(([, k]) => k === (route === 'job' ? 'jobs' : route));
   const sv = statusView(systemReady);
   return (
     <header className="st-top" ref={topRef}>
@@ -259,7 +261,7 @@ function PlanDialog() {
 }
 
 export default function AppShell({ children }) {
-  const { route, jobId } = useStore();
+  const { route, jobId, user } = useStore();
   const rootRef = useRef(null);
   const pageRef = useRef(null);
   const topRef = useRef(null);
@@ -267,7 +269,7 @@ export default function AppShell({ children }) {
 
   // Which way did the user move through the sidebar? Content enters from that direction.
   const current = route === 'job' ? 'jobs' : route;
-  const idx = Math.max(0, NAV.findIndex(([, k]) => k === current));
+  const idx = Math.max(0, navFor(user).findIndex(([, k]) => k === current));
   const dir = idx >= prevIdx.current ? 'down' : 'up';
   const pageKey = route + (route === 'job' ? jobId : '');
 
