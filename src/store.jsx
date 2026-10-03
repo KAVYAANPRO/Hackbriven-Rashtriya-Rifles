@@ -209,7 +209,12 @@ export function StoreProvider({ children }) {
       }
     }
   }, []);
-  useEffect(() => { if (visible) refreshReady(); }, [visible, refreshReady]);
+  // Check once on load even in a background tab (so status is never stuck on "Checking…"),
+  // then again whenever the tab becomes visible; the interval below only polls while visible.
+  const readyChecked = useRef(false);
+  useEffect(() => {
+    if (visible || !readyChecked.current) { readyChecked.current = true; refreshReady(); }
+  }, [visible, refreshReady]);
   useInterval(refreshReady, 20000, visible);
 
   const [providers, setProviders] = useState(null);
@@ -299,10 +304,11 @@ export function StoreProvider({ children }) {
   const fetchedFor = useRef(null);
   useEffect(() => {
     if (!authed || !jobId) { setJobStatus('idle'); return undefined; }
-    if (!visible) return undefined;
+    const first = fetchedFor.current !== jobId;
+    // In a background tab, still load a newly opened job once (never show stale list data), but don't poll.
+    if (!visible && !first) return undefined;
     let dead = false;
     let timer = 0;
-    const first = fetchedFor.current !== jobId;
     fetchedFor.current = jobId;
     const have = jobDataRef.current && jobDataRef.current.id === jobId;
     const tick = async (initial) => {
@@ -311,7 +317,7 @@ export function StoreProvider({ children }) {
       if (dead) return;
       const cur = j || jobDataRef.current;
       const alive = cur && cur.id === jobId && !isTerminalStatus(cur.status);
-      if (alive) timer = setTimeout(() => tick(false), j ? 1500 : 4000);
+      if (alive && visible) timer = setTimeout(() => tick(false), j ? 1500 : 4000);
     };
     if (first || !have || jobLive) tick(first && !have);
     else setJobStatus('ready');
@@ -388,11 +394,25 @@ export function StoreProvider({ children }) {
     if (r === 'login' || r === 'landing') nav('#/create');
   }, [nav]);
 
-  const register = useCallback(async (email, password) => finishAuth(await api.register(email, password)), [finishAuth]);
+  // With email verification on, sign-up returns { verification_required, email } and no session yet;
+  // the Login page then collects the emailed code and calls verifyEmail.
+  const register = useCallback(async (email, password) => {
+    const res = await api.register(email, password);
+    if (res && res.verification_required) return { verify: res.email, minutes: res.expires_in_minutes };
+    finishAuth(res);
+    return null;
+  }, [finishAuth]);
+  const verifyEmail = useCallback(async (email, code) => finishAuth(await api.verifyEmail(email, code)), [finishAuth]);
+  const resendCode = useCallback((email) => api.resendCode(email), []);
   const login = useCallback(async (email, password) => finishAuth(await api.login(email, password)), [finishAuth]);
 
   // ---- style + resolution: the stored choice, corrected against what the server offers and the plan allows ----
-  const resolutionsAllowed = creditsInfo && Array.isArray(creditsInfo.resolutions_allowed) ? creditsInfo.resolutions_allowed : null;
+  // Until /credits answers (it is skipped while the tab is in the background), fall back to what the
+  // signed-in user's plan allows according to /plans, so locked options are never offered.
+  const userPlanDef = user && pricing ? planOf(pricing, user.plan) : null;
+  const resolutionsAllowed = creditsInfo && Array.isArray(creditsInfo.resolutions_allowed)
+    ? creditsInfo.resolutions_allowed
+    : (userPlanDef && Array.isArray(userPlanDef.resolutions) ? userPlanDef.resolutions : null);
   const style = useMemo(() => effectiveStyle(pricing, styleRaw), [pricing, styleRaw]);
   const resolution = useMemo(
     () => effectiveResolution(pricing, resolutionRaw, resolutionsAllowed),
@@ -592,7 +612,9 @@ export function StoreProvider({ children }) {
   const plan = (creditsInfo && creditsInfo.plan) || (user && user.plan) || 'free';
   const credits = creditsInfo ? creditsInfo.balance : (user ? user.balance : null);
   const planExpiresAt = creditsInfo ? creditsInfo.plan_expires_at : (user ? user.plan_expires_at : null);
-  const tiersAllowed = creditsInfo ? creditsInfo.tiers_allowed : null; // null = not known yet
+  const tiersAllowed = creditsInfo
+    ? creditsInfo.tiers_allowed
+    : (userPlanDef && Array.isArray(userPlanDef.tiers) ? userPlanDef.tiers : null); // null = not known yet
   const costByTier = (pricing && pricing.cost_by_tier) || (creditsInfo && creditsInfo.cost_by_tier) || null;
   const tiers = useMemo(() => tierList({ cost_by_tier: costByTier }), [costByTier]);
 
@@ -603,7 +625,7 @@ export function StoreProvider({ children }) {
     job, jobStatus, jobError, jobStale, jobAction,
     providers, providersError, systemReady,
     cancelOpen, topupOpen, topupPack, toast, gen, checkout,
-    go, openJob, register, login, signOut, retryBoot, generate, clearGenError,
+    go, openJob, register, login, verifyEmail, resendCode, signOut, retryBoot, generate, clearGenError,
     approve, publish, cancelJob, retryAsNew, refreshJobs, refreshJob, retryJob,
     refreshPricing, refreshCredits, refreshProviders, refreshReady, startCheckout, clearCheckoutError, showToast,
     setApprover: setApproverEdit, setCancelOpen, setTopupOpen, setTopupPack, setFilters,
@@ -619,7 +641,7 @@ export function StoreProvider({ children }) {
     pricing, pricingError, plan, credits, planExpiresAt, tiersAllowed, costByTier, tiers, creditsError,
     jobs, jobsStatus, jobsError, anyRunning, job, jobStatus, jobError, jobStale, jobAction,
     providers, providersError, systemReady, cancelOpen, topupOpen, topupPack, toast, gen, checkout,
-    go, openJob, register, login, signOut, retryBoot, generate, clearGenError, approve, publish, cancelJob, retryAsNew,
+    go, openJob, register, login, verifyEmail, resendCode, signOut, retryBoot, generate, clearGenError, approve, publish, cancelJob, retryAsNew,
     refreshJobs, refreshJob, retryJob, refreshPricing, refreshCredits, refreshProviders, refreshReady, startCheckout,
     clearCheckoutError, showToast]);
 

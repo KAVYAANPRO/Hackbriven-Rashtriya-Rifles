@@ -238,3 +238,7 @@ const PROVIDER_NAMES = {
   enhancer: 'Enhancer', local_scale: 'Standard scaling',
 };
 export const providerName = (id) => PROVIDER_NAMES[id] || id;
+
+// The Orchestra (provider internals) is for the master admin only.
+export const ADMIN_ROUTES = ['orchestra'];
+export const navFor = (user) => NAV.filter(([, key]) => !ADMIN_ROUTES.includes(key) || !!(user && user.is_admin));
