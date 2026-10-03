@@ -1,17 +1,41 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
-// The browser only ever talks to /api/*; Vite forwards it to the FastAPI backend.
-const proxy = {
-  '/api': {
-    target: 'http://127.0.0.1:8000',
-    changeOrigin: true,
-    rewrite: (p) => p.replace(/^\/api/, ''),
-  },
-};
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 3000, strictPort: true, host: true, proxy },
-  preview: { port: 3000, proxy },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@pages': path.resolve(__dirname, './src/pages'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@constants': path.resolve(__dirname, './src/constants'),
+      '@context': path.resolve(__dirname, './src/context'),
+      '@api': path.resolve(__dirname, './src/api'),
+      '@styles': path.resolve(__dirname, './src/styles'),
+    },
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ''),
+      },
+    },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
 });
