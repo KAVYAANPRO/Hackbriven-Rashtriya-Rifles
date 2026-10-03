@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useStore } from '../store.jsx';
+import { LogoMark } from '../components/Logo.jsx';
 import { useDeck } from '../components/deck/useDeck.js';
 import { CountUp, TierChart, Words } from '../components/deck/parts.jsx';
 import Globe from '../components/deck/Globe.jsx';
@@ -54,7 +55,7 @@ export default function Landing() {
           <div className="spot" ref={spot} aria-hidden="true" />
 
           <header className="card-head">
-            <div className="logo"><span className="block-dot" />IdeaFeed AI</div>
+            <div className="logo"><LogoMark size={26} />IdeaFeed AI</div>
             <span className="num" key={active}>{String(active + 1).padStart(2, '0')}</span>
           </header>
           <div className="card-rule" />
