@@ -1,6 +1,8 @@
 import { useStore } from './store.jsx';
+import { ADMIN_ROUTES } from './data.js';
 import AppShell from './components/AppShell.jsx';
 import Icon from './components/Icon.jsx';
+import PointerFX from './components/PointerFX.jsx';
 import { ErrorState } from './components/common.jsx';
 import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
@@ -37,7 +39,7 @@ function BootScreen({ error, onRetry, onSignOut }) {
 }
 
 export default function App() {
-  const { route, authed, booting, bootError, retryBoot, signOut, toast } = useStore();
+  const { route, authed, booting, bootError, retryBoot, signOut, toast, user } = useStore();
 
   let view;
   if (route === 'landing') view = <Landing />;
@@ -45,12 +47,15 @@ export default function App() {
   else if (bootError && !authed) view = <BootScreen error={bootError} onRetry={retryBoot} onSignOut={signOut} />;
   else if (!authed) view = <Login />;
   else {
-    const Page = PAGES[route] || Create;
+    // Admin-only pages fall back to Create for everyone else (the backend refuses their data anyway).
+    const allowed = !ADMIN_ROUTES.includes(route) || !!(user && user.is_admin);
+    const Page = (allowed && PAGES[route]) || Create;
     view = <AppShell><Page /></AppShell>;
   }
 
   return (
     <div className="app-root">
+      <PointerFX />
       {view}
       {toast && <div className="st-toast" role="status"><Icon name="check" size={16} />{toast}</div>}
     </div>
