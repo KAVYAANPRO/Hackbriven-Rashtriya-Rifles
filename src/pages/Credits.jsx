@@ -13,6 +13,7 @@ function featuresOf(p) {
     : `${p.credits} credits to start`);
   list.push(p.tiers.length === 1 ? `${tierName(p.tiers[0])} motion tier only` : `${p.tiers.map(tierName).join(', ')} tiers`);
   if (p.period_days) list.push(`Active for ${p.period_days} days, then back to Free`);
+  if (Array.isArray(p.perks)) list.push(...p.perks);
   return list;
 }
 

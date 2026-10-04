@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LANGS, fmt, planOf } from '../data.js';
+import { LANGS, fmt, planFor, planOf } from '../data.js';
 import { toMs } from '../api/adapt.js';
 import { useStore } from '../store.jsx';
 import { PageHeader, Seg } from '../components/common.jsx';
@@ -7,9 +7,10 @@ import Icon from '../components/Icon.jsx';
 
 export default function Settings() {
   const {
-    apiKey, setApiKey, geminiKey, setGeminiKey, lang, setLang, tier, setTier, tiers, user, plan, pricing, credits,
-    planExpiresAt, providers, signOut,
+    apiKey, setApiKey, geminiKey, setGeminiKey, lang, setLang, tier, setTier, tiers, tiersAllowed, pricing,
+    user, plan, credits, planExpiresAt, providers, signOut, go,
   } = useStore();
+  const isTierAllowed = (t) => !tiersAllowed || tiersAllowed.includes(t);
   const [reveal, setReveal] = useState(false);
   const [revealG, setRevealG] = useState(false);
   const legacyAuth = !!(providers && providers.auth && providers.auth.enabled);
@@ -55,8 +56,22 @@ export default function Settings() {
             <Seg label="Default language" options={LANGS.map((l) => ({ v: l.v, label: l.label }))} value={lang} onChange={setLang} />
           </div>
           <div className="field2">
-            <div className="field2-head"><label>Motion tier</label></div>
-            <Seg label="Default motion tier" options={tiers.map((t) => ({ v: t.v, label: t.label }))} value={tier} onChange={setTier} />
+            <div className="field2-head">
+              <label>Motion tier</label>
+              {tiers.some((t) => !isTierAllowed(t.v)) && (
+                <button type="button" className="link-btn" onClick={() => go('credits')}>Upgrade to unlock more</button>
+              )}
+            </div>
+            <Seg
+              label="Default motion tier"
+              value={tier}
+              onChange={setTier}
+              options={tiers.map((t) => {
+                const ok = isTierAllowed(t.v);
+                const need = !ok ? planFor(pricing, t.v) : null;
+                return { v: t.v, label: t.label, disabled: !ok, note: !ok ? `Needs ${need ? need.name : 'a paid plan'}` : '' };
+              })}
+            />
           </div>
         </section>
 
