@@ -27,9 +27,27 @@
 /* video frames being generated, rising through the scene */
 .frames { position: absolute; inset: 0; }
 .frame { position: absolute; top: 100%; aspect-ratio: 9 / 14; border: 1px solid rgba(244, 235, 195, 0.22); background: linear-gradient(160deg, rgba(180, 231, 104, 0.12), rgba(0, 80, 102, 0.55)); padding: 6px; display: flex; flex-direction: column; gap: 6px; animation: frameRise var(--dur) linear var(--delay) infinite backwards; will-change: transform, opacity; }
-.frame-art { flex: 1; position: relative; overflow: hidden; background: repeating-linear-gradient(135deg, rgba(0, 80, 102, 0.9) 0 6px, rgba(12, 43, 52, 0.9) 6px 12px); }
-.frame-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(244, 235, 195, 0.28) 50%, transparent 70%); transform: translateX(-120%); animation: shimmer 2.6s ease-in-out infinite; }
-.frame-meta { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: rgba(244, 235, 195, 0.7); }
+.frame-art {
+  flex: 1; position: relative; overflow: hidden;
+  background: radial-gradient(120% 90% at 30% 20%, rgba(255, 255, 255, 0.16), transparent 55%), var(--frame-hue, linear-gradient(160deg, #0c5068, #0a2b34));
+}
+.frame-art::before { content: ''; position: absolute; inset: 0; z-index: 1; background: radial-gradient(60% 45% at 70% 72%, rgba(0, 0, 0, 0.35), transparent 70%); }
+.frame-art::after { content: ''; position: absolute; inset: 0; z-index: 2; background: linear-gradient(100deg, transparent 30%, rgba(244, 235, 195, 0.28) 50%, transparent 70%); transform: translateX(-120%); animation: shimmer 2.6s ease-in-out infinite; }
+/* The real StyleArt illustration (same art used in the Create flow's style
+   picker) fills the card instead of a fixed 64px picker-sized swatch. */
+.frame-art .cx-style-sw { width: 100%; height: 100%; margin-bottom: 0; border: 0; border-radius: 0; }
+.frame-art .cx-style-art { transition: none; }
+/* Each card gets its own look instead of one repeated stripe pattern, so the
+   row reads as six different pieces of content, not six copies of a loading
+   skeleton. */
+.frame:nth-of-type(6n + 1) .frame-art { --frame-hue: linear-gradient(160deg, #1a6fa8 0%, #0a3a57 100%); }
+.frame:nth-of-type(6n + 2) .frame-art { --frame-hue: linear-gradient(160deg, #e0954f 0%, #7a3a1e 100%); }
+.frame:nth-of-type(6n + 3) .frame-art { --frame-hue: linear-gradient(160deg, #8b6fd9 0%, #332163 100%); }
+.frame:nth-of-type(6n + 4) .frame-art { --frame-hue: linear-gradient(160deg, #d9a23b 0%, #7a3310 100%); }
+.frame:nth-of-type(6n + 5) .frame-art { --frame-hue: linear-gradient(160deg, #5fcf9a 0%, #0e4a3c 100%); }
+.frame:nth-of-type(6n + 6) .frame-art { --frame-hue: linear-gradient(160deg, #d96b8a 0%, #5c1f38 100%); }
+.frame-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-family: var(--font-mono); font-size: 9px; color: rgba(244, 235, 195, 0.7); }
+.frame-meta span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .frame-meta b { width: 22px; height: 3px; background: var(--color-accent); transform-origin: left; animation: fillBar 3.4s ease-in-out infinite; }
 @keyframes frameRise {
   0% { transform: translate3d(0, 0, 0) rotate(var(--tilt)); opacity: 0; }

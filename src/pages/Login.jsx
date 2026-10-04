@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth, useClerk } from '@clerk/react';
 import { useStore } from '../store.jsx';
 import { LogoMark } from '../components/Logo.jsx';
+import StyleArt from '../components/create/StyleArt.jsx';
 
 const CLERK_ON = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const PENDING = 'ideafeed_clerk_pending'; // set when the user starts Google sign-in, so we never auto-sign-in uninvited
@@ -75,14 +76,17 @@ function GoogleContinue({ disabled, onError }) {
 
 const STAGES = ['Intelligence', 'Generation', 'Composition', 'Validation', 'Review'];
 
-// Rising "video frame" cards: [left %, width px, duration s, delay s, tilt deg, label]
+// Rising "video frame" cards: [left %, width px, duration s, delay s, tilt deg, label, styleId].
+// Each card shows a real StyleArt.jsx illustration (the same art used in the
+// Create flow's style picker) labeled with that style's own name - reuses
+// the product's real art instead of a generic placeholder or a stock image.
 const FRAMES = [
-  [6, 92, 17, 0, -6, 'scene 01'],
-  [19, 120, 21, 5, 4, 'scene 02'],
-  [37, 84, 15, 9, -3, 'scene 03'],
-  [52, 132, 23, 2, 6, 'scene 04'],
-  [68, 96, 18, 11, -5, 'scene 05'],
-  [82, 112, 20, 7, 3, 'scene 06'],
+  [6, 92, 17, 0, -6, '3D', '3d'],
+  [19, 120, 21, 5, 4, 'Playful', 'playful'],
+  [37, 84, 15, 9, -3, 'Corporate', 'corporate'],
+  [52, 132, 23, 2, 6, 'Illustrated', 'illustrated'],
+  [68, 96, 18, 11, -5, 'Neon', 'neon'],
+  [82, 112, 20, 7, 3, 'Retro', 'retro'],
 ];
 
 // Lights the pipeline stages one after another, then starts over.
@@ -236,13 +240,13 @@ export default function Login() {
           <i className="orb orb--c" />
           <div className="floor-grid"><i /></div>
           <div className="frames">
-            {FRAMES.map(([left, w, dur, delay, tilt, label]) => (
+            {FRAMES.map(([left, w, dur, delay, tilt, label, styleId]) => (
               <div
                 key={label}
                 className="frame"
                 style={{ left: `${left}%`, width: w, '--dur': `${dur}s`, '--delay': `${delay}s`, '--tilt': `${tilt}deg` }}
               >
-                <div className="frame-art" />
+                <div className="frame-art"><StyleArt id={styleId} fallback="linear-gradient(160deg, #0c5068, #0a2b34)" /></div>
                 <div className="frame-meta"><span>{label}</span><b /></div>
               </div>
             ))}
