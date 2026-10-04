@@ -14,7 +14,10 @@ export default function EmailVideoPanel({ job }) {
   const [message, setMessage] = useState('');
   const mounted = useRef(true);
 
-  useEffect(() => () => { mounted.current = false; }, []);
+  useEffect(() => {
+    mounted.current = true; // StrictMode unmounts and re-mounts in dev: re-arm on every mount
+    return () => { mounted.current = false; };
+  }, []);
   useEffect(() => { setTo((cur) => cur || accountEmail); }, [accountEmail]);
 
   const valid = /^\S+@\S+\.\S+$/.test(to.trim());
@@ -55,7 +58,7 @@ export default function EmailVideoPanel({ job }) {
         />
         <p className="fine2">A link to watch the video and the manual handoff package. Arrives in seconds.</p>
         <button type="submit" className="btn2 btn2--primary btn2--block" disabled={busy || !valid}>
-          {busy ? <><i className="spin" />Sending…</> : <><Icon name="mail" size={16} />Send video + handoff</>}
+          {busy ? <><i className="spin" />Sending…</> : state === 'sent' ? <><Icon name="check" size={16} />Sent - send again</> : <><Icon name="mail" size={16} />Send video + handoff</>}
         </button>
         {message && <p className={state === 'error' ? 'err-text' : 'fine2'} role={state === 'error' ? 'alert' : 'status'}>{message}</p>}
       </form>
