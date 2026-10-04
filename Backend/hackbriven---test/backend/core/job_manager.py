@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import threading
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from backend.config import settings
 from backend.core.exceptions import JobNotFoundError
@@ -208,7 +208,10 @@ class JobManager:
             JobStatus.QUEUED, JobStatus.RUNNING_INTELLIGENCE, JobStatus.RUNNING_GENERATION,
             JobStatus.RUNNING_COMPOSITION, JobStatus.RUNNING_VALIDATION, JobStatus.PUBLISHING,
         }
-        interrupted = [job for job in self.list() if job.status in active]
+        # Several servers can share one database (local dev + the deployed app), so only jobs nobody
+        # has touched for a while are treated as orphaned - never another server's live job.
+        stale_before = datetime.now(timezone.utc) - timedelta(minutes=30)
+        interrupted = [job for job in self.list() if job.status in active and job.updated_at < stale_before]
         for job in interrupted:
             stage = job.status.value
             self.mark_failed(job.id, stage=stage, reason="interrupted by a server restart - please generate again")
