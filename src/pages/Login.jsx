@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../store.jsx';
 import { LogoMark } from '../components/Logo.jsx';
+import StyleArt from '../components/create/StyleArt.jsx';
 
 const STAGES = ['Intelligence', 'Generation', 'Composition', 'Validation', 'Review'];
 
-// Rising "video frame" cards: [left %, width px, duration s, delay s, tilt deg, label]
-// Labels are sample topics (what this product actually turns into a video),
-// not generic "scene N" placeholders - makes the animation read as real
-// product output instead of decorative loading boxes.
+// Rising "video frame" cards: [left %, width px, duration s, delay s, tilt deg, label, styleId].
+// Each card shows a real StyleArt.jsx illustration (the same art used in the
+// Create flow's style picker) labeled with that style's own name - reuses
+// the product's real art instead of a generic placeholder or a stock image.
 const FRAMES = [
-  [6, 92, 17, 0, -6, 'phone review'],
-  [19, 120, 21, 5, 4, 'morning routine'],
-  [37, 84, 15, 9, -3, 'startup pitch'],
-  [52, 132, 23, 2, 6, 'diwali recipe'],
-  [68, 96, 18, 11, -5, 'AI explained'],
-  [82, 112, 20, 7, 3, 'match recap'],
+  [6, 92, 17, 0, -6, '3D', '3d'],
+  [19, 120, 21, 5, 4, 'Playful', 'playful'],
+  [37, 84, 15, 9, -3, 'Corporate', 'corporate'],
+  [52, 132, 23, 2, 6, 'Illustrated', 'illustrated'],
+  [68, 96, 18, 11, -5, 'Neon', 'neon'],
+  [82, 112, 20, 7, 3, 'Retro', 'retro'],
 ];
 
 // Lights the pipeline stages one after another, then starts over.
@@ -168,13 +169,13 @@ export default function Login() {
           <i className="orb orb--c" />
           <div className="floor-grid"><i /></div>
           <div className="frames">
-            {FRAMES.map(([left, w, dur, delay, tilt, label]) => (
+            {FRAMES.map(([left, w, dur, delay, tilt, label, styleId]) => (
               <div
                 key={label}
                 className="frame"
                 style={{ left: `${left}%`, width: w, '--dur': `${dur}s`, '--delay': `${delay}s`, '--tilt': `${tilt}deg` }}
               >
-                <div className="frame-art" />
+                <div className="frame-art"><StyleArt id={styleId} fallback="linear-gradient(160deg, #0c5068, #0a2b34)" /></div>
                 <div className="frame-meta"><span>{label}</span><b /></div>
               </div>
             ))}
