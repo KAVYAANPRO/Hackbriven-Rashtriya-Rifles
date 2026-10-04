@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => {
   server: {
     port: 5173,
     strictPort: true,
+    host: true, // listen on the LAN so other devices can open the dev server
     proxy: {
       // Proxied server-to-server so the browser never talks to the real
       // backend directly in dev - that backend's CORS allowlist only

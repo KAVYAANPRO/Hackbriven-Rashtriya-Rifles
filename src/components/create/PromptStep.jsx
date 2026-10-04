@@ -15,6 +15,14 @@ export const GRID_COLORS = {
   light: { border: 'rgba(31, 43, 40, 0.12)', fill: 'rgba(79, 157, 135, 0.2)' },
 };
 
+// One-click starting points so a first-time user (or a judge) gets to a video in seconds.
+const EXAMPLES = [
+  'How UPI changed everyday payments in India',
+  'A day in the life of a Rashtriya Rifles soldier',
+  '5 study habits that actually work before exams',
+  'Why the Moon landing still matters today',
+];
+
 const MAX_HEIGHT = 320;
 const TICK_MS = 15;
 
@@ -213,6 +221,17 @@ export default function PromptStep({ onSubmit }) {
           </button>
         </div>
       </div>
+
+      {empty && phase === 'idle' && (
+        <div className="cx-examples" role="group" aria-label="Example ideas">
+          <span className="cx-examples-label">Try one:</span>
+          {EXAMPLES.map((ex) => (
+            <button key={ex} type="button" className="cx-example" onClick={() => { setTopic(ex); taRef.current?.focus(); }}>
+              {ex}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="cx-msgs">
         {error && <p className="cx-err" role="alert">{error}</p>}

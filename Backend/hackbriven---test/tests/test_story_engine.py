@@ -43,7 +43,9 @@ _mock_openrouter_response = _mock_groq_response  # identical OpenAI-style shape
 @patch("backend.services.story_engine.httpx.Client")
 def test_generate_script_uses_gemini_when_available(mock_client_cls, mock_settings):
     mock_settings.gemini_api_key = "fake-key"
+    mock_settings.gemini_key_pool = ["fake-key"]
     mock_settings.groq_api_key = "fake-key"
+    mock_settings.groq_key_pool = ["fake-key"]
     mock_settings.gemini_model = "gemini-1.5-flash"
     mock_settings.provider_timeout_seconds = 5.0
 
@@ -62,7 +64,9 @@ def test_generate_script_uses_gemini_when_available(mock_client_cls, mock_settin
 @patch("backend.services.story_engine.httpx.Client")
 def test_generate_script_falls_back_to_groq_on_gemini_failure(mock_client_cls, mock_settings):
     mock_settings.gemini_api_key = "fake-key"
+    mock_settings.gemini_key_pool = ["fake-key"]
     mock_settings.groq_api_key = "fake-key"
+    mock_settings.groq_key_pool = ["fake-key"]
     mock_settings.gemini_model = "gemini-1.5-flash"
     mock_settings.groq_model = "llama-3.1-70b-versatile"
     mock_settings.provider_timeout_seconds = 5.0
@@ -87,8 +91,11 @@ def test_generate_script_falls_back_to_groq_on_gemini_failure(mock_client_cls, m
 @patch("backend.services.story_engine.httpx.Client")
 def test_generate_script_falls_back_to_openrouter_when_gemini_and_groq_fail(mock_client_cls, mock_settings):
     mock_settings.gemini_api_key = ""
+    mock_settings.gemini_key_pool = []
     mock_settings.groq_api_key = ""
+    mock_settings.groq_key_pool = []
     mock_settings.openrouter_api_key = "fake-key"
+    mock_settings.openrouter_key_pool = ["fake-key"]
     mock_settings.openrouter_model = "nvidia/nemotron-3-super-120b-a12b:free"
     mock_settings.provider_timeout_seconds = 5.0
 
@@ -106,8 +113,11 @@ def test_generate_script_falls_back_to_openrouter_when_gemini_and_groq_fail(mock
 @patch("backend.services.story_engine.settings")
 def test_generate_script_falls_back_to_local_template_with_no_keys(mock_settings):
     mock_settings.gemini_api_key = ""
+    mock_settings.gemini_key_pool = []
     mock_settings.groq_api_key = ""
+    mock_settings.groq_key_pool = []
     mock_settings.openrouter_api_key = ""
+    mock_settings.openrouter_key_pool = []
 
     script = story_engine.generate_script("Why EVs are popular")
 

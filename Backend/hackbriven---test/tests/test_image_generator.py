@@ -28,6 +28,7 @@ def _base_settings(mock_settings, **overrides):
     mock_settings.has_cloudflare = False
     mock_settings.cloudflare_image_model_list = []
     mock_settings.openrouter_api_key = ""
+    mock_settings.openrouter_key_pool = []
     mock_settings.openrouter_image_model_list = []
     mock_settings.provider_cooldown_seconds = 0
     mock_settings.image_use_pollinations = True

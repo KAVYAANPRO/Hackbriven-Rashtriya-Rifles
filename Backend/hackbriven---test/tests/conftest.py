@@ -11,6 +11,14 @@ from backend.models.schemas import CaptionWord, Scene, SceneAssets, Script
 
 
 @pytest.fixture(autouse=True)
+def _no_real_safety_ai(monkeypatch):
+    """The AI content reviewer would call live providers with the keys in .env; tests use the keyword layer only."""
+    from backend.config import settings
+
+    monkeypatch.setattr(settings, "content_safety_ai", False)
+
+
+@pytest.fixture(autouse=True)
 def _no_real_mongo_by_default(monkeypatch):
     """Project-wide safety net: .env now carries a real MONGODB_URI for the
     live app, which backend/core/job_manager.py and backend/core/credits.py

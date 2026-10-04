@@ -107,10 +107,29 @@ def _parse_script(topic: str, raw_text: str) -> Script:
         raise InvalidScriptError(STAGE, f"missing required field: {exc}") from exc
 
 
+def _post_chat(url: str, key: str, payload: dict) -> dict:
+    with httpx.Client(timeout=settings.provider_timeout_seconds) as client:
+        response = client.post(url, json=payload, headers={"Authorization": f"Bearer {key}"})
+        response.raise_for_status()
+        return response.json()
+
+
+def _first_working_key(keys: list[str], call):
+    """Run `call(key)` with each pooled key until one works, so one exhausted or revoked key
+    doesn't take the provider out of the chain while a backup key is still good."""
+    last: Exception | None = None
+    for key in keys:
+        try:
+            return call(key)
+        except Exception as exc:  # noqa: BLE001 - try the next key
+            last = exc
+    raise last or RuntimeError("no API key configured")
+
+
 def _call_gemini(
     topic: str, language: Language, style: str = "auto", style_prompt: str | None = None, model: str | None = None
 ) -> Script:
-    if not settings.gemini_api_key:
+    if not settings.gemini_key_pool:
         raise RuntimeError("GEMINI_API_KEY not configured")
 
     # The key goes in a header, not the URL: httpx echoes the URL (and so the
@@ -124,10 +143,13 @@ def _call_gemini(
         "systemInstruction": {"parts": [{"text": _build_system_prompt(language, style, style_prompt)}]},
         "generationConfig": {"responseMimeType": "application/json"},
     }
-    with httpx.Client(timeout=settings.provider_timeout_seconds) as client:
-        response = client.post(url, json=payload, headers={"x-goog-api-key": settings.gemini_api_key})
-        response.raise_for_status()
-        body = response.json()
+    def post(key: str) -> dict:
+        with httpx.Client(timeout=settings.provider_timeout_seconds) as client:
+            response = client.post(url, json=payload, headers={"x-goog-api-key": key})
+            response.raise_for_status()
+            return response.json()
+
+    body = _first_working_key(settings.gemini_key_pool, post)
 
     raw_text = body["candidates"][0]["content"]["parts"][0]["text"]
     return _parse_script(topic, raw_text)
@@ -136,11 +158,10 @@ def _call_gemini(
 def _call_groq(
     topic: str, language: Language, style: str = "auto", style_prompt: str | None = None, model: str | None = None
 ) -> Script:
-    if not settings.groq_api_key:
+    if not settings.groq_key_pool:
         raise RuntimeError("GROQ_API_KEY not configured")
 
     url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {settings.groq_api_key}"}
     payload = {
         "model": model or settings.groq_model,
         "messages": [
@@ -149,10 +170,7 @@ def _call_groq(
         ],
         "response_format": {"type": "json_object"},
     }
-    with httpx.Client(timeout=settings.provider_timeout_seconds) as client:
-        response = client.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-        body = response.json()
+    body = _first_working_key(settings.groq_key_pool, lambda key: _post_chat(url, key, payload))
 
     raw_text = body["choices"][0]["message"]["content"]
     return _parse_script(topic, raw_text)
@@ -161,11 +179,10 @@ def _call_groq(
 def _call_openrouter(
     topic: str, language: Language, style: str = "auto", style_prompt: str | None = None, model: str | None = None
 ) -> Script:
-    if not settings.openrouter_api_key:
+    if not settings.openrouter_key_pool:
         raise RuntimeError("OPENROUTER_API_KEY not configured")
 
     url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {settings.openrouter_api_key}"}
     payload = {
         "model": model or settings.openrouter_model,
         "messages": [
@@ -174,10 +191,7 @@ def _call_openrouter(
         ],
         "response_format": {"type": "json_object"},
     }
-    with httpx.Client(timeout=settings.provider_timeout_seconds) as client:
-        response = client.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-        body = response.json()
+    body = _first_working_key(settings.openrouter_key_pool, lambda key: _post_chat(url, key, payload))
 
     raw_text = body["choices"][0]["message"]["content"]
     return _parse_script(topic, raw_text)

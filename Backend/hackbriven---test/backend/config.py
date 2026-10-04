@@ -15,19 +15,28 @@ def _parse_key_pool(plural_csv: str, singular: str) -> list[str]:
     return keys
 
 
+def _dedupe(keys: list[str]) -> list[str]:
+    return list(dict.fromkeys(k for k in keys if k))
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     gemini_api_key: str = ""
+    # Backup keys (comma-separated, other Google accounts): tried in order after GEMINI_API_KEY
+    # when it is rate-limited, out of quota or revoked.
+    gemini_api_keys: str = ""
     gemini_model: str = "gemini-flash-latest"
     # Tried in order after GEMINI_MODEL when it is overloaded (503), rate-limited or retired.
     gemini_fallback_models: str = "gemini-3.5-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest"
     groq_api_key: str = ""
+    groq_api_keys: str = ""  # backup keys, same pooling as GEMINI_API_KEYS
     groq_model: str = "openai/gpt-oss-120b"
     groq_fallback_models: str = "openai/gpt-oss-20b,qwen/qwen3.8-27b"
     groq_whisper_model: str = "whisper-large-v3-turbo"
 
     openrouter_api_key: str = ""
+    openrouter_api_keys: str = ""  # backup keys, same pooling as GEMINI_API_KEYS
     openrouter_model: str = "nvidia/nemotron-3-super-120b-a12b:free"
     openrouter_fallback_models: str = "qwen/qwen3.8-27b:free"
 
@@ -186,6 +195,11 @@ class Settings(BaseSettings):
     clerk_authorized_parties: str = ""
     clerk_api_url: str = "https://api.clerk.com/v1"
 
+    # Reject 18+, deepfake, gore and other not-for-all-audiences ideas before any credit is spent.
+    # The keyword layer always runs; this adds an AI reviewer (Gemini/Groq) for subtler cases and
+    # fails open if no provider answers.
+    content_safety_ai: bool = True
+
     # Reference-image uploads
     max_upload_images: int = 8
     max_upload_bytes: int = 10 * 1024 * 1024
@@ -300,6 +314,18 @@ class Settings(BaseSettings):
     @property
     def has_auth(self) -> bool:
         return bool(self.backend_api_key)
+
+    @property
+    def gemini_key_pool(self) -> list[str]:
+        return _dedupe([self.gemini_api_key.strip(), *_parse_key_pool(self.gemini_api_keys, "")])
+
+    @property
+    def groq_key_pool(self) -> list[str]:
+        return _dedupe([self.groq_api_key.strip(), *_parse_key_pool(self.groq_api_keys, "")])
+
+    @property
+    def openrouter_key_pool(self) -> list[str]:
+        return _dedupe([self.openrouter_api_key.strip(), *_parse_key_pool(self.openrouter_api_keys, "")])
 
     @property
     def eightscale_key_pool(self) -> list[str]:

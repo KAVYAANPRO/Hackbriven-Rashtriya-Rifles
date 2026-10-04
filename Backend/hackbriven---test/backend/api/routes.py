@@ -18,7 +18,7 @@ from backend.core.job_manager import JobManager
 from backend.core.pipeline import run as run_pipeline
 from backend.models.schemas import CaptionSettings, Job, JobStatus, Language, MotionTier, QualityReport
 from backend.core.exceptions import PipelineError
-from backend.services import exporter, mailer, payments, prompt_booster, qoneqt_handoff, styles, uploads
+from backend.services import content_safety, exporter, mailer, payments, prompt_booster, qoneqt_handoff, styles, uploads
 from backend.services import captions as captions_service, video_composer
 from backend.services.payments import PaymentError, SignatureVerificationError
 
@@ -382,6 +382,17 @@ class CreateJobRequest(BaseModel):
 _MAX_TOPIC_CHARS = 4000
 
 
+def _reject_unsafe(*texts: str | None) -> None:
+    """422 'Not appropriate video' for 18+, deepfake, gore etc. Runs before any credit is charged."""
+    combined = " . ".join(t.strip() for t in texts if t and t.strip())
+    verdict = content_safety.review(combined)
+    if not verdict.allowed:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": verdict.message, "code": "content_blocked", "category": verdict.category},
+        )
+
+
 @router.post("", response_model=JobView)
 def create_job(
     request: CreateJobRequest,
@@ -394,6 +405,8 @@ def create_job(
         raise HTTPException(status_code=422, detail="topic must not be empty")
     if len(topic) > _MAX_TOPIC_CHARS:
         raise HTTPException(status_code=422, detail=f"topic is too long (max {_MAX_TOPIC_CHARS} characters)")
+
+    _reject_unsafe(topic, request.style_prompt if request.style == "custom" else None)
 
     # Keys are namespaced by account so one caller's key can never hand back another's job.
     scoped_key = f"{account}:{idempotency_key}" if idempotency_key else None
@@ -812,6 +825,12 @@ def boost_prompt(body: BoostRequest, account: str = Depends(account_required)) -
         raise HTTPException(status_code=429, detail="too many boosts, try again in a few minutes")
     if not styles.is_valid(body.style):
         raise HTTPException(status_code=422, detail=f"unknown style: {body.style!r}")
+    rules = content_safety.check_rules(prompt)
+    if not rules.allowed:
+        raise HTTPException(
+            status_code=422,
+            detail={"message": rules.message, "code": "content_blocked", "category": rules.category},
+        )
     text, source = prompt_booster.boost(
         prompt, body.language, body.style, styles.clean_custom(body.style_prompt) or None
     )
@@ -1033,9 +1052,9 @@ def _full_provider_status() -> dict:
         "script": {
             "chain": ["gemini", "groq", "openrouter", "local_template"],
             "configured": {
-                "gemini": bool(settings.gemini_api_key),
-                "groq": bool(settings.groq_api_key),
-                "openrouter": bool(settings.openrouter_api_key),
+                "gemini": bool(settings.gemini_key_pool),
+                "groq": bool(settings.groq_key_pool),
+                "openrouter": bool(settings.openrouter_key_pool),
                 "local_template": True,
             },
         },

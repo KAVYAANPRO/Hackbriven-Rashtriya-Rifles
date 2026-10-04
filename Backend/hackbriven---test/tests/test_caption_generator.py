@@ -26,6 +26,7 @@ def _fake_segment(words: list[SimpleNamespace]) -> SimpleNamespace:
 @patch("backend.services.caption_generator.httpx.Client")
 def test_call_groq_whisper_returns_word_level_captions(mock_client_cls, mock_settings, tmp_path: Path):
     mock_settings.groq_api_key = "fake-key"
+    mock_settings.groq_key_pool = ["fake-key"]
     mock_settings.groq_whisper_model = "whisper-large-v3-turbo"
     mock_settings.provider_timeout_seconds = 30.0
 
@@ -54,6 +55,7 @@ def test_call_groq_whisper_returns_word_level_captions(mock_client_cls, mock_set
 @patch("backend.services.caption_generator.settings")
 def test_call_groq_whisper_raises_without_key(mock_settings, tmp_path: Path):
     mock_settings.groq_api_key = ""
+    mock_settings.groq_key_pool = []
 
     with pytest.raises(RuntimeError, match="not configured"):
         caption_generator._call_groq_whisper(tmp_path / "audio.mp3")
@@ -63,6 +65,7 @@ def test_call_groq_whisper_raises_without_key(mock_settings, tmp_path: Path):
 @patch("backend.services.caption_generator.httpx.Client")
 def test_call_groq_whisper_raises_when_no_words(mock_client_cls, mock_settings, tmp_path: Path):
     mock_settings.groq_api_key = "fake-key"
+    mock_settings.groq_key_pool = ["fake-key"]
     mock_settings.groq_whisper_model = "whisper-large-v3-turbo"
     mock_settings.provider_timeout_seconds = 30.0
 

@@ -140,3 +140,8 @@
 .capx-dot--pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; border: 0; padding: 0; }
 .capx-dot:focus-visible, .capx-dot--pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 .capx-apply { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.cx-examples { width: 100%; max-width: 720px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: -10px; }
+.cx-examples-label { font-size: 13px; color: var(--muted); }
+.cx-example { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text, inherit); cursor: pointer; transition: border-color .15s, background .15s; }
+.cx-example:hover, .cx-example:focus-visible { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); outline: none; }
