@@ -9,6 +9,7 @@ import { ErrorState, Pill, Skeleton } from '../components/common.jsx';
 import Icon from '../components/Icon.jsx';
 import DownloadMenu from '../components/DownloadMenu.jsx';
 import EmailVideoPanel from '../components/EmailVideoButton.jsx';
+import { shareUrl, useQr } from './Watch.jsx';
 import CaptionControls, { normalizeCaptions } from '../components/CaptionControls.jsx';
 
 const NOT_CANCELLABLE = ['approved', 'manual_handoff', 'published', 'failed', 'cancelled', 'publish_failed'];
@@ -69,6 +70,31 @@ function CaptionsPanel({ j, busy, onApply }) {
           {working ? <><i className="spin" />Updating the video…</> : <><Icon name="refresh" size={16} />Apply to video</>}
         </button>
         {working && <p className="fine2" role="status">Re-rendering captions only. This usually takes under a minute.</p>}
+      </div>
+    </section>
+  );
+}
+
+function SharePanel({ j }) {
+  const url = shareUrl(j.raw);
+  const qr = useQr(url, 140);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* clipboard blocked */ }
+  };
+  return (
+    <section className="panel spot-card rise" style={{ '--i': 5 }}>
+      <div className="panel-head"><h3>Share</h3><span className="mono">public link</span></div>
+      <div className="share-box">
+        {qr && <img src={qr} alt="QR code for the share link" width={120} height={120} />}
+        <div>
+          <p className="fine2">Anyone with this link can watch, no sign-in. Scan to open on a phone.</p>
+          <div className="capx-apply">
+            <button type="button" className="btn2 btn2--primary btn2--sm" onClick={copy}><Icon name={copied ? 'check' : 'layers'} size={14} />{copied ? 'Copied' : 'Copy link'}</button>
+            <a className="btn2 btn2--ghost btn2--sm" href={url} target="_blank" rel="noreferrer">Open page</a>
+          </div>
+          <p className="share-url mono">{url}</p>
+        </div>
       </div>
     </section>
   );
@@ -423,6 +449,8 @@ export default function JobDetail() {
               )}
             </section>
           )}
+
+          {done && j.hasVideo && <SharePanel j={j} />}
 
           {done && j.hasVideo && <EmailVideoPanel job={j} />}
 
