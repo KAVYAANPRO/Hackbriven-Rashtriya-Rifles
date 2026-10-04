@@ -90,11 +90,11 @@ button.spot-card { color: inherit; font: inherit; }
 .ph-sub { margin-top: 6px !important; max-width: 560px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 
 /* ---- buttons ---- */
-.btn2 { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-weight: 600; font-size: 14px; white-space: nowrap; transition: background 0.15s, border-color 0.15s, opacity 0.15s; }
+.btn2 { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-weight: 600; font-size: 14px; white-space: nowrap; transition: background 0.15s, border-color 0.15s, opacity 0.15s, box-shadow 0.2s, transform 0.15s; }
 .btn2:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn2--primary { background: var(--accent); color: #0a1010; }
-.btn2--primary:hover:not(:disabled) { background: #c6f07f; }
-.btn2--primary:active:not(:disabled) { background: #a2d558; }
+.btn2--primary { background: var(--accent); color: #0a1010; box-shadow: 0 0 0 0 rgba(180, 231, 104, 0); }
+.btn2--primary:hover:not(:disabled) { background: #c6f07f; box-shadow: 0 4px 20px -4px rgba(180, 231, 104, 0.55); transform: translateY(-1px); }
+.btn2--primary:active:not(:disabled) { background: #a2d558; transform: translateY(0); box-shadow: 0 2px 8px -2px rgba(180, 231, 104, 0.4); }
 .btn2--ghost { background: none; border-color: var(--line-2); color: var(--text); }
 .btn2--ghost:hover:not(:disabled) { background: var(--surface-2); }
 .btn2--danger { background: #0d5368; color: var(--text); }
