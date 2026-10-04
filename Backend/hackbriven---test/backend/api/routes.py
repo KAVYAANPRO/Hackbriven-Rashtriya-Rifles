@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hmac
+import re
 import logging
 import uuid
 from pathlib import Path
@@ -15,9 +16,10 @@ from backend.core.credits import DEFAULT_ACCOUNT, InsufficientCreditsError
 from backend.core.exceptions import InvalidJobStateError, JobNotFoundError
 from backend.core.job_manager import JobManager
 from backend.core.pipeline import run as run_pipeline
-from backend.models.schemas import Job, JobStatus, Language, MotionTier, QualityReport
+from backend.models.schemas import CaptionSettings, Job, JobStatus, Language, MotionTier, QualityReport
 from backend.core.exceptions import PipelineError
 from backend.services import exporter, mailer, payments, prompt_booster, qoneqt_handoff, styles, uploads
+from backend.services import captions as captions_service, video_composer
 from backend.services.payments import PaymentError, SignatureVerificationError
 
 logger = logging.getLogger(__name__)
@@ -315,6 +317,44 @@ def login(body: LoginRequest, request: Request) -> dict:
     raise HTTPException(status_code=401, detail="invalid API key")
 
 
+class ClerkLoginRequest(BaseModel):
+    token: str = Field(..., max_length=8192)
+
+
+@auth_router.post("/clerk")
+def clerk_login(body: ClerkLoginRequest, request: Request) -> dict:
+    """Exchange a Clerk session token ("Continue with Google") for this app's own session.
+    The Clerk-verified email is the account key: a new account is created (already verified,
+    with the signup bonus) or the existing one is signed in. Same response shape as /auth/login."""
+    if not settings.has_clerk:
+        raise HTTPException(status_code=503, detail="Google sign-in is not configured on this server")
+    if security.rate_limited(f"clerk-ip:{_client_key(request)}", limit=60, window_seconds=600):
+        raise HTTPException(status_code=429, detail="too many sign-in attempts, try again later")
+    try:
+        from backend.services import clerk_auth
+    except ImportError as exc:  # PyJWT[crypto] not installed
+        logger.error("Clerk sign-in unavailable: %s", exc)
+        raise HTTPException(status_code=503, detail="Google sign-in is not available on this server") from exc
+    try:
+        email = clerk_auth.verified_email(body.token)
+    except clerk_auth.ClerkError as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+    try:
+        user, activated = users.ensure_external(email, "clerk")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except users.UserExistsError as exc:
+        raise HTTPException(status_code=409, detail="could not create your account - try again") from exc
+    if activated:
+        _grant_signup_credits(user["email"])
+    return {
+        "authenticated": True,
+        "auth_required": bool(settings.has_auth or settings.require_login),
+        "token": security.issue_token(user["email"]),
+        "user": _user_view(user),
+    }
+
+
 @auth_router.get("/me")
 def me(account: str = Depends(account_optional)) -> dict:
     user = users.get(account) if account != DEFAULT_ACCOUNT else None
@@ -336,6 +376,7 @@ class CreateJobRequest(BaseModel):
     style: str = "auto"
     style_prompt: str | None = None
     resolution: str = plans.DEFAULT_RESOLUTION
+    captions: CaptionSettings = Field(default_factory=CaptionSettings)
 
 
 _MAX_TOPIC_CHARS = 4000
@@ -439,6 +480,7 @@ def create_job(
         style=request.style,
         style_prompt=style_text,
         resolution=resolution.id,
+        captions=request.captions,
     )
     background_tasks.add_task(run_pipeline, job.id, job_manager)
     return _view(job)
@@ -576,15 +618,98 @@ class ApproveRequest(BaseModel):
     approver: str = "unknown"
 
 
+def _email_video_task(job_id: str, to: str | None = None) -> None:
+    """Runs after the response is sent; mailer.send_video_email never raises."""
+    try:
+        job = job_manager.get(job_id)
+    except JobNotFoundError:
+        return
+    mailer.send_video_email(job, _job_dir(job_id), to=to)
+
+
+class EmailVideoRequest(BaseModel):
+    to: str | None = Field(default=None, max_length=254)
+
+
+def _queue_video_email(background_tasks: BackgroundTasks, job: Job) -> None:
+    """Auto-send after approve / manual handoff. Silently skipped for anonymous jobs or when SMTP is off."""
+    if job.owner and mailer.enabled():
+        background_tasks.add_task(_email_video_task, job.id)
+
+
 @router.post("/{job_id}/approve", response_model=JobView)
-def approve_job(job_id: str, request: ApproveRequest, account: str = Depends(account_required)) -> JobView:
+def approve_job(
+    job_id: str,
+    request: ApproveRequest,
+    background_tasks: BackgroundTasks,
+    account: str = Depends(account_required),
+) -> JobView:
     _get_owned_job(job_id, account)
     try:
-        return _view(job_manager.approve(job_id, approver=request.approver))
+        job = job_manager.approve(job_id, approver=request.approver)
     except JobNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except InvalidJobStateError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+    _queue_video_email(background_tasks, job)
+    return _view(job)
+
+
+@router.post("/{job_id}/email")
+def email_job_video(
+    job_id: str,
+    background_tasks: BackgroundTasks,
+    request: EmailVideoRequest | None = None,
+    account: str = Depends(account_required),
+) -> dict:
+    """Send the finished video and its manual-handoff package by email: to `to` when given
+    (share with anyone), otherwise to the job owner's account email."""
+    job = _get_owned_job(job_id, account)
+    to = (request.to or "").strip() if request else ""
+    if to and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", to):
+        raise HTTPException(status_code=422, detail="enter a valid email address")
+    to = to or job.owner or ""
+    if not to:
+        raise HTTPException(status_code=409, detail="enter an email address to send this video to")
+    if not job.result_path or not (_job_dir(job_id) / "final.mp4").exists():
+        raise HTTPException(status_code=409, detail="the video isn't finished yet")
+    if not mailer.enabled():
+        raise HTTPException(status_code=503, detail="email isn't set up on this server")
+    if security.rate_limited(f"email-video:{job_id}:{to.lower()}", limit=1, window_seconds=60):
+        raise HTTPException(status_code=429, detail="this video was just emailed there - try again in a minute")
+    if security.rate_limited(f"email-video-account:{account}", limit=20, window_seconds=3600):
+        raise HTTPException(status_code=429, detail="too many emails sent - try again later")
+    background_tasks.add_task(_email_video_task, job_id, to)
+    return {"queued": True, "to": mailer.mask_email(to)}
+
+
+@router.post("/{job_id}/captions", response_model=JobView)
+def restyle_captions(job_id: str, request: CaptionSettings, account: str = Depends(account_required)) -> JobView:
+    """Re-burn a finished video's captions with new settings (on/off, size, colours, language).
+    Reuses the rendered scenes and narration, so only the caption and audio-mux steps run."""
+    job = _get_owned_job(job_id, account)
+    job_dir = _job_dir(job_id)
+    silent, narration = job_dir / "silent.mp4", job_dir / "narration.wav"
+    if not job.result_path or not (job_dir / "final.mp4").exists():
+        raise HTTPException(status_code=409, detail="the video isn't finished yet")
+    if not (silent.exists() and narration.exists() and (job_dir / captions_service.SOURCE_FILE).exists()):
+        raise HTTPException(
+            status_code=409, detail="this video was made before caption editing was available - generate it again"
+        )
+    with exporter._lock_for(f"{job_id}:captions"):
+        try:
+            scenes = captions_service.display_scenes(captions_service.load_source(job_dir), request, job.language)
+            music = job_dir / "music.wav"
+            final = video_composer.finish_video(
+                job_dir, silent, narration, scenes, request, music if music.exists() else None
+            )
+            exporter.deliver_at_resolution(job_dir, final, job.resolution)
+        except PipelineError as exc:
+            raise HTTPException(status_code=500, detail=f"{exc.stage}: {exc.reason}") from exc
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("job=%s caption restyle failed", job_id)
+            raise HTTPException(status_code=500, detail="could not update the captions") from exc
+    return _view(job_manager.update(job_id, captions=request))
 
 
 @router.post("/{job_id}/cancel", response_model=JobView)
@@ -599,7 +724,7 @@ def cancel_job(job_id: str, account: str = Depends(account_required)) -> JobView
 
 
 @router.post("/{job_id}/publish", response_model=JobView)
-def publish_job(job_id: str, account: str = Depends(account_required)) -> JobView:
+def publish_job(job_id: str, background_tasks: BackgroundTasks, account: str = Depends(account_required)) -> JobView:
     """Qoneqt has no public creator-publishing API (confirmed from the
     client's own creator roster spreadsheet), so this always performs the
     honest manual handoff described in qoneqt_handoff.py and sets status to
@@ -633,15 +758,15 @@ def publish_job(job_id: str, account: str = Depends(account_required)) -> JobVie
             )
         )
 
-    return _view(
-        job_manager.update(
-            job_id,
-            status=JobStatus.MANUAL_HANDOFF,
-            publish_error=None,
-            manual_handoff_path=str(note_path),
-            manual_handoff_note=note_text,
-        )
+    job = job_manager.update(
+        job_id,
+        status=JobStatus.MANUAL_HANDOFF,
+        publish_error=None,
+        manual_handoff_path=str(note_path),
+        manual_handoff_note=note_text,
     )
+    _queue_video_email(background_tasks, job)
+    return _view(job)
 
 
 # --------------------------------------------------------------------------

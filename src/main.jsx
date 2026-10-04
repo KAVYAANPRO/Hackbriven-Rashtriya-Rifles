@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/ds.css';
@@ -15,8 +16,10 @@ import { StoreProvider } from './store.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <StoreProvider>
-      <App />
-    </StoreProvider>
+    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <StoreProvider>
+        <App />
+      </StoreProvider>
+    </ClerkProvider>
   </StrictMode>
 );

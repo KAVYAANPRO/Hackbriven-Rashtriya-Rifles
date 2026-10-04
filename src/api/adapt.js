@@ -118,6 +118,7 @@ export function adaptJob(api) {
     style: api.style || null,
     styleText: api.style_prompt || '',
     resolution: api.resolution || null,
+    captions: api.captions || null,
     referenceCount: Array.isArray(api.reference_images) ? api.reference_images.length : 0,
     providerEvents: (Array.isArray(api.provider_events) ? api.provider_events : []).map((e) => ({
       stage: e.stage,

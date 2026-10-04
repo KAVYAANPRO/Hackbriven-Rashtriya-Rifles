@@ -146,3 +146,52 @@ def confirm_code(email: str, code: str) -> dict:
 
 def delete(email: str) -> None:
     docstore.delete(_COLL, normalize_email(email))
+
+
+# --- external identity providers (Clerk / Google) -----------------------------
+
+
+def ensure_external(email: str, provider: str) -> tuple[dict, bool]:
+    """Find or create the account for an email the identity provider has already verified.
+
+    Returns (user, activated): activated is True when the account became usable just now (created,
+    or a pending sign-up confirmed), i.e. when the signup bonus is due. A new account gets an unguessable random password (the user can only
+    sign in through the provider until they set one). An existing *unverified* account is marked
+    verified and its password is replaced: whoever started that sign-up never proved they own the
+    address, so they must not keep a password to an account the real owner now uses."""
+    clean = normalize_email(email)
+    if not _EMAIL_RE.match(clean) or len(clean) > 254:
+        raise ValueError("the identity provider returned an invalid email address")
+    now = datetime.now(timezone.utc).isoformat()
+    existing = get(clean)
+    if existing is None:
+        doc = {
+            "email_verified": True,
+            "email": clean,
+            "password_hash": security.hash_password(secrets.token_urlsafe(32)),
+            "plan": plans.FREE_PLAN_ID,
+            "plan_expires_at": None,
+            "created_at": now,
+            "verified_at": now,
+            "auth_providers": [provider],
+        }
+        if docstore.insert(_COLL, clean, doc):
+            return doc, True
+        existing = get(clean)  # lost a race with a concurrent sign-up
+        if existing is None:
+            raise UserExistsError(clean)
+    changes: dict = {}
+    activated = not is_verified(existing)
+    if activated:
+        changes.update({
+            "email_verified": True,
+            "verification": None,
+            "verified_at": now,
+            "password_hash": security.hash_password(secrets.token_urlsafe(32)),
+        })
+    providers = list(existing.get("auth_providers") or [])
+    if provider not in providers:
+        changes["auth_providers"] = providers + [provider]
+    if changes:
+        existing = docstore.update(_COLL, clean, changes) or {**existing, **changes}
+    return existing, activated

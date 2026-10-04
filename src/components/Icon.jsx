@@ -25,6 +25,7 @@ const PATHS = {
   layers: <path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5" />,
   plus: <path d="M12 5v14M5 12h14" />,
   lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>,
+  mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3.5 6.5l8.5 6.5 8.5-6.5" /></>,
 };
 
 export default function Icon({ name, size = 18, className = '' }) {

@@ -3,6 +3,7 @@ import * as api from './api/client.js';
 import { adaptJob, isTerminalStatus } from './api/adapt.js';
 import { loadRazorpay } from './api/razorpay.js';
 import { closePlanDialog } from './components/planDialogBus.js';
+import { normalizeCaptions } from './components/CaptionControls.jsx';
 import {
   DEFAULT_RESOLUTION, DEFAULT_STYLE, STYLE_PROMPT_MAX, effectiveResolution, effectiveStyle, planOf, resolutionList,
   styleList, tierList,
@@ -98,6 +99,9 @@ export function StoreProvider({ children }) {
   const [styleRaw, setStyleRaw] = useState(read('ideafeed_style') || DEFAULT_STYLE);
   const [styleText, setStyleTextRaw] = useState('');
   const [resolutionRaw, setResolutionRaw] = useState(read('ideafeed_resolution') || DEFAULT_RESOLUTION);
+  const [captions, setCaptionsRaw] = useState(() => {
+    try { return normalizeCaptions(JSON.parse(read('ideafeed_captions') || 'null')); } catch { return normalizeCaptions(null); }
+  });
   const [geminiKey, setGeminiKeyRaw] = useState(read('ideafeed_gemini') || '');
   const [apiKey, setApiKeyRaw] = useState(read('ideafeed_key') || '');
   const [filters, setFilters] = useState({ status: 'all', lang: 'all', tier: 'all' });
@@ -372,6 +376,7 @@ export function StoreProvider({ children }) {
   }, []);
 
   const signOut = useCallback(() => {
+    try { if (window.Clerk && window.Clerk.user) window.Clerk.signOut(); } catch { /* Clerk not loaded */ }
     resetSession();
     nav('#/', false);
   }, [resetSession, nav]);
@@ -405,6 +410,8 @@ export function StoreProvider({ children }) {
   const verifyEmail = useCallback(async (email, code) => finishAuth(await api.verifyEmail(email, code)), [finishAuth]);
   const resendCode = useCallback((email) => api.resendCode(email), []);
   const login = useCallback(async (email, password) => finishAuth(await api.login(email, password)), [finishAuth]);
+  // "Continue with Google" via Clerk: trade the Clerk session token for this app's own session.
+  const loginWithClerk = useCallback(async (clerkToken) => finishAuth(await api.loginWithClerk(clerkToken)), [finishAuth]);
 
   // ---- style + resolution: the stored choice, corrected against what the server offers and the plan allows ----
   // Until /credits answers (it is skipped while the tab is in the background), fall back to what the
@@ -440,7 +447,7 @@ export function StoreProvider({ children }) {
       return;
     }
     const sig = JSON.stringify([
-      clean, lang, tier, hasStyles ? style : null, customText, hasResolutions ? resolution : null,
+      clean, lang, tier, hasStyles ? style : null, customText, hasResolutions ? resolution : null, captions,
       files.map((f) => [f.name, f.size, f.lastModified]),
     ]);
     if (!attempt.current || attempt.current.sig !== sig || !attempt.current.retryable) {
@@ -456,7 +463,7 @@ export function StoreProvider({ children }) {
         setGen((g) => ({ ...g, phase: 'creating' }));
       }
       stage = 'create';
-      const body = { topic: clean, language: lang, motion_tier: tier };
+      const body = { topic: clean, language: lang, motion_tier: tier, captions };
       if (hasStyles) {
         body.style = style;
         if (style === 'custom') body.style_prompt = customText;
@@ -486,7 +493,7 @@ export function StoreProvider({ children }) {
     } finally {
       genBusy.current = false;
     }
-  }, [topic, lang, tier, style, styleText, resolution, hasStyles, hasResolutions, mergeJob, refreshCredits, openJob]);
+  }, [topic, lang, tier, style, styleText, resolution, captions, hasStyles, hasResolutions, mergeJob, refreshCredits, openJob]);
 
   // ---- job actions ----
   const [jobAction, setJobAction] = useState({ busy: null, error: '' }); // busy: approve | publish | cancel | null
@@ -525,6 +532,10 @@ export function StoreProvider({ children }) {
   }, [approver, runAction]);
 
   const publish = useCallback((id) => runAction('publish', id, () => api.publishJob(id), null), [runAction]);
+  const restyleCaptions = useCallback(
+    (id, c) => runAction('captions', id, () => api.restyleCaptions(id, normalizeCaptions(c)), 'Captions updated'),
+    [runAction],
+  );
 
   const cancelJob = useCallback(async (id) => {
     const ok = await runAction('cancel', id, () => api.cancelJob(id), 'Cancelled');
@@ -538,6 +549,7 @@ export function StoreProvider({ children }) {
     if (j.style) setStyleRaw(j.style);
     setStyleTextRaw(j.styleText || '');
     if (j.resolution) setResolutionRaw(j.resolution);
+    if (j.captions) setCaptionsRaw(normalizeCaptions(j.captions));
     clearGenError();
     nav('#/create');
   }, [nav, clearGenError]);
@@ -619,14 +631,14 @@ export function StoreProvider({ children }) {
   const tiers = useMemo(() => tierList({ cost_by_tier: costByTier }), [costByTier]);
 
   const value = useMemo(() => ({
-    route, jobId, authed, booting, bootError, user, approver, topic, lang, tier, style, styleText, resolution, resolutionsAllowed, geminiKey, apiKey, filters,
+    route, jobId, authed, booting, bootError, user, approver, topic, lang, tier, style, styleText, resolution, resolutionsAllowed, captions, geminiKey, apiKey, filters,
     pricing, pricingError, plan, credits, planExpiresAt, tiersAllowed, costByTier, tiers, creditsError,
     jobs, jobsStatus, jobsError, anyRunning,
     job, jobStatus, jobError, jobStale, jobAction,
     providers, providersError, systemReady,
     cancelOpen, topupOpen, topupPack, toast, gen, checkout,
-    go, openJob, register, login, verifyEmail, resendCode, signOut, retryBoot, generate, clearGenError,
-    approve, publish, cancelJob, retryAsNew, refreshJobs, refreshJob, retryJob,
+    go, openJob, register, login, loginWithClerk, verifyEmail, resendCode, signOut, retryBoot, generate, clearGenError,
+    approve, publish, cancelJob, retryAsNew, restyleCaptions, refreshJobs, refreshJob, retryJob,
     refreshPricing, refreshCredits, refreshProviders, refreshReady, startCheckout, clearCheckoutError, showToast,
     setApprover: setApproverEdit, setCancelOpen, setTopupOpen, setTopupPack, setFilters,
     setTopic: (v) => { setTopicRaw(v); clearGenError(); },
@@ -635,13 +647,14 @@ export function StoreProvider({ children }) {
     setStyle: (v) => { setStyleRaw(v); write('ideafeed_style', v); clearGenError(); },
     setStyleText: (v) => { setStyleTextRaw(String(v).slice(0, STYLE_PROMPT_MAX)); clearGenError(); },
     setResolution: (v) => { setResolutionRaw(v); write('ideafeed_resolution', v); clearGenError(); },
+    setCaptions: (v) => { const c = normalizeCaptions(v); setCaptionsRaw(c); write('ideafeed_captions', JSON.stringify(c)); clearGenError(); },
     setGeminiKey: (v) => { setGeminiKeyRaw(v); write('ideafeed_gemini', v || null); },
     setApiKey: (v) => { setApiKeyRaw(v); write('ideafeed_key', v || null); },
-  }), [route, jobId, authed, booting, bootError, user, approver, topic, lang, tier, style, styleText, resolution, resolutionsAllowed, geminiKey, apiKey, filters,
+  }), [route, jobId, authed, booting, bootError, user, approver, topic, lang, tier, style, styleText, resolution, resolutionsAllowed, captions, geminiKey, apiKey, filters,
     pricing, pricingError, plan, credits, planExpiresAt, tiersAllowed, costByTier, tiers, creditsError,
     jobs, jobsStatus, jobsError, anyRunning, job, jobStatus, jobError, jobStale, jobAction,
     providers, providersError, systemReady, cancelOpen, topupOpen, topupPack, toast, gen, checkout,
-    go, openJob, register, login, verifyEmail, resendCode, signOut, retryBoot, generate, clearGenError, approve, publish, cancelJob, retryAsNew,
+    go, openJob, register, login, loginWithClerk, verifyEmail, resendCode, signOut, retryBoot, generate, clearGenError, approve, publish, cancelJob, retryAsNew, restyleCaptions,
     refreshJobs, refreshJob, retryJob, refreshPricing, refreshCredits, refreshProviders, refreshReady, startCheckout,
     clearCheckoutError, showToast]);
 

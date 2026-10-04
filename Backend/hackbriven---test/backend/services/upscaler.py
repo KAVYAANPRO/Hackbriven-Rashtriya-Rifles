@@ -36,8 +36,31 @@ def _fal_headers() -> dict:
     return {"Authorization": f"Key {settings.fal_api_key}"}
 
 
-def _fal_upscale(src: Path, dst: Path, factor: float) -> Path:
-    """Run a video through fal.ai's queue API (submit -> poll -> fetch result -> download)."""
+_FAL_BLOCKED_STATUS = {401, 402, 403}
+_FAL_BLOCKED_SECONDS = 3600.0
+_CLIP_TIMEOUT_SECONDS = 150.0
+_fal_blocked_until = 0.0
+
+
+def _fal_blocked() -> bool:
+    return _fal_blocked_until > time.monotonic()
+
+
+def _fal_upscale(src: Path, dst: Path, factor: float, timeout: float | None = None) -> Path:
+    """Run a video through fal.ai's queue API; an unfunded/blocked key disables it for an hour."""
+    global _fal_blocked_until
+    if _fal_blocked():
+        raise RuntimeError("enhancement service unavailable (account blocked or out of credit)")
+    try:
+        return _fal_upscale_once(src, dst, factor, timeout)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code in _FAL_BLOCKED_STATUS:
+            _fal_blocked_until = time.monotonic() + _FAL_BLOCKED_SECONDS
+            logger.warning("enhancer rejected (%s); using local scaling for the next hour", exc.response.status_code)
+        raise
+
+
+def _fal_upscale_once(src: Path, dst: Path, factor: float, timeout: float | None) -> Path:
     if not settings.fal_api_key:
         raise RuntimeError("no enhancement service configured")
 
@@ -51,7 +74,7 @@ def _fal_upscale(src: Path, dst: Path, factor: float) -> Path:
         info = submitted.json()
         status_url, response_url = info["status_url"], info["response_url"]
 
-        deadline = time.monotonic() + settings.upscale_timeout_seconds
+        deadline = time.monotonic() + (timeout if timeout is not None else settings.upscale_timeout_seconds)
         while True:
             status = client.get(status_url, headers=_fal_headers())
             status.raise_for_status()
@@ -122,7 +145,7 @@ def enhance_video(master: Path, dst: Path, *, width: int, height: int) -> Path:
         return dst
 
     providers = []
-    if settings.fal_api_key:
+    if settings.enhancer_enabled and settings.fal_api_key and not _fal_blocked():
         providers.append(Provider("enhancer", ai, settings.provider_cooldown_seconds))
     providers.append(Provider("local_scale", lambda: _ffmpeg_resize(master, dst, width, height)))
     try:
@@ -136,12 +159,18 @@ def enhance_video(master: Path, dst: Path, *, width: int, height: int) -> Path:
 def enhance_clip(raw: Path) -> Path | None:
     """Upscale a 480p motion clip in place. Returns the enhanced path, or None when no
     enhancer is available/funded (callers then just use the raw clip)."""
-    if not (settings.enhance_motion_clips and settings.fal_api_key):
+    if not (settings.enhancer_enabled and settings.enhance_motion_clips and settings.fal_api_key) or _fal_blocked():
         return None
     out = raw.with_name(raw.stem + ".enh.mp4")
     try:
         call_with_fallback(
-            [Provider("enhancer", lambda: _fal_upscale(raw, out, factor=2.0), settings.provider_cooldown_seconds)],
+            [
+                Provider(
+                    "enhancer",
+                    lambda: _fal_upscale(raw, out, factor=2.0, timeout=_CLIP_TIMEOUT_SECONDS),
+                    settings.provider_cooldown_seconds,
+                )
+            ],
             stage=f"{STAGE}.clip",
         )
     except PipelineError as exc:

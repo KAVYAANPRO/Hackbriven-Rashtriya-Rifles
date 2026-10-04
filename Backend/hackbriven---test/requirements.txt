@@ -14,6 +14,7 @@ python-dotenv>=1.0.0
 python-multipart>=0.0.9  # reference-image uploads
 gradio>=6.0.0
 pymongo>=4.8.0
+PyJWT[crypto]>=2.8.0  # Clerk session-token verification (POST /auth/clerk)
 
 pytest>=8.3.0
 pytest-mock>=3.14.0

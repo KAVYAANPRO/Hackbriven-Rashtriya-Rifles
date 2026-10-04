@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from backend.config import settings
 from backend.core.exceptions import JobNotFoundError
-from backend.models.schemas import Job, JobStatus, Language, MotionTier, ProviderEvent, StageTimestamp
+from backend.models.schemas import CaptionSettings, Job, JobStatus, Language, MotionTier, ProviderEvent, StageTimestamp
 
 _mongo_client = None
 
@@ -66,6 +66,7 @@ class JobManager:
         style: str = "auto",
         style_prompt: str | None = None,
         resolution: str = "1080p",
+        captions: CaptionSettings | None = None,
     ) -> Job:
         if idempotency_key:
             existing = self.find_by_idempotency_key(idempotency_key)
@@ -82,6 +83,7 @@ class JobManager:
             style=style,
             style_prompt=style_prompt,
             resolution=resolution,
+            captions=captions or CaptionSettings(),
         )
         job.history.append(StageTimestamp(stage="input", status="accepted"))
         with self._lock:
@@ -198,6 +200,19 @@ class JobManager:
             job.touch()
             self._persist(job)
             return job
+
+    def fail_interrupted_jobs(self) -> int:
+        """At startup no pipeline thread exists yet, so any job still queued/running was cut off by
+        the previous process. Fail it instead of leaving it 'running' forever."""
+        active = {
+            JobStatus.QUEUED, JobStatus.RUNNING_INTELLIGENCE, JobStatus.RUNNING_GENERATION,
+            JobStatus.RUNNING_COMPOSITION, JobStatus.RUNNING_VALIDATION, JobStatus.PUBLISHING,
+        }
+        interrupted = [job for job in self.list() if job.status in active]
+        for job in interrupted:
+            stage = job.status.value
+            self.mark_failed(job.id, stage=stage, reason="interrupted by a server restart - please generate again")
+        return len(interrupted)
 
     def update(self, job_id: str, **fields: object) -> Job:
         with self._lock:
