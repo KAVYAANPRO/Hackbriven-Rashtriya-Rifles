@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+storage/jobs/*
+!storage/jobs/.gitkeep
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+storage/local/
+
+# local copies of .env (contain secrets)
+env (*)
+*.env.bak
