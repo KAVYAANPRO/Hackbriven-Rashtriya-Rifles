@@ -48,7 +48,7 @@ def test_plans_lists_styles_resolutions_and_formats(client) -> None:
 
 def test_credits_reports_allowed_resolutions(client) -> None:
     headers = _token(client)
-    assert client.get("/credits", headers=headers).json()["resolutions_allowed"] == ["720p", "1080p"]
+    assert client.get("/credits", headers=headers).json()["resolutions_allowed"] == ["720p"]
 
 
 # --- creating jobs with style + resolution ---
@@ -81,13 +81,21 @@ def test_unknown_style_or_resolution_is_rejected_without_charging(client) -> Non
 def test_free_plan_cannot_order_4k(client) -> None:
     response = _create(client, _token(client), resolution="4k")
     assert response.status_code == 403
-    assert response.json()["detail"]["required_plan"] == "pro"
+    assert response.json()["detail"]["required_plan"] == "studio"
     assert credits.get_balance("a@example.com") == settings.signup_credits
+
+
+def test_pro_plan_cannot_order_4k(client) -> None:
+    headers = _token(client)
+    users.activate_plan("a@example.com", "pro")
+    response = _create(client, headers, resolution="4k")
+    assert response.status_code == 403
+    assert response.json()["detail"]["required_plan"] == "studio"
 
 
 def test_4k_charges_the_resolution_surcharge(client) -> None:
     headers = _token(client)
-    users.activate_plan("a@example.com", "pro")
+    users.activate_plan("a@example.com", "studio")
     assert _create(client, headers, resolution="4k").status_code == 200
     expected = credits.cost_for_tier(MotionTier.BASIC) + 3
     assert credits.get_balance("a@example.com") == settings.signup_credits - expected

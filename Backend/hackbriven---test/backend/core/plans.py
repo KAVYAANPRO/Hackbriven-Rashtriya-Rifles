@@ -39,7 +39,11 @@ RESOLUTIONS: tuple[Resolution, ...] = (
     Resolution("1080p", "1080p", 1080, 1920, 0),
     Resolution("4k", "4K", 2160, 3840, 3),
 )
-DEFAULT_RESOLUTION = "1080p"
+# Must stay a resolution every plan (including Free) can use, since it's the
+# fallback when a job doesn't specify one - Free no longer includes 1080p,
+# so 720p is the only choice that never needs a plan upgrade just to omit
+# the field.
+DEFAULT_RESOLUTION = "720p"
 _RES_BY_ID = {r.id: r for r in RESOLUTIONS}
 
 
@@ -51,7 +55,8 @@ class PlanDef:
     credits: int  # granted on purchase (free: granted once at signup via settings.signup_credits)
     period_days: int | None  # None = never expires
     tiers: tuple[MotionTier, ...]
-    resolutions: tuple[str, ...] = ("720p", "1080p")
+    resolutions: tuple[str, ...] = ("720p",)
+    perks: tuple[str, ...] = ()  # extra marketing/behavioral notes shown on the plan card, e.g. queue priority
 
     def to_dict(self) -> dict:
         return {
@@ -62,15 +67,23 @@ class PlanDef:
             "period_days": self.period_days,
             "tiers": [t.value for t in self.tiers],
             "resolutions": list(self.resolutions),
+            "perks": list(self.perks),
         }
 
 
 FREE_PLAN_ID = "free"
 
+# Resolution access is tiered: Free is capped at 720p, Pro adds 1080p, and 4K
+# (an upscaled, compute-costly master) is a Studio exclusive - previously Pro
+# and Studio both listed every resolution including 4k, which gave away the
+# Studio-exclusive perk for free at the Pro price.
 PLANS: tuple[PlanDef, ...] = (
-    PlanDef("free", "Free", 0, 0, None, (MotionTier.BASIC,)),
-    PlanDef("pro", "Pro", 49900, 120, 30, ALL_TIERS, ("720p", "1080p", "4k")),
-    PlanDef("studio", "Studio", 99900, 300, 30, ALL_TIERS, ("720p", "1080p", "4k")),
+    PlanDef("free", "Free", 0, 0, None, (MotionTier.BASIC,), ("720p",)),
+    PlanDef("pro", "Pro", 49900, 120, 30, ALL_TIERS, ("720p", "1080p")),
+    PlanDef(
+        "studio", "Studio", 99900, 300, 30, ALL_TIERS, ("720p", "1080p", "4k"),
+        perks=("During high-traffic periods, Studio jobs are given processing priority.",),
+    ),
 )
 
 # One-off credit packs (id is the position, stable because the list is append-only).
