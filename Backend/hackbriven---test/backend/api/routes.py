@@ -618,17 +618,18 @@ class ApproveRequest(BaseModel):
     approver: str = "unknown"
 
 
-def _email_video_task(job_id: str, to: str | None = None) -> None:
+def _email_video_task(job_id: str, to: str | None = None, share_url: str | None = None) -> None:
     """Runs after the response is sent; mailer.send_video_email never raises."""
     try:
         job = job_manager.get(job_id)
     except JobNotFoundError:
         return
-    mailer.send_video_email(job, _job_dir(job_id), to=to)
+    mailer.send_video_email(job, _job_dir(job_id), to=to, share_url=share_url)
 
 
 class EmailVideoRequest(BaseModel):
     to: str | None = Field(default=None, max_length=254)
+    share_url: str | None = Field(default=None, max_length=1000)
 
 
 def _queue_video_email(background_tasks: BackgroundTasks, job: Job) -> None:
@@ -679,7 +680,11 @@ def email_job_video(
         raise HTTPException(status_code=429, detail="this video was just emailed there - try again in a minute")
     if security.rate_limited(f"email-video-account:{account}", limit=20, window_seconds=3600):
         raise HTTPException(status_code=429, detail="too many emails sent - try again later")
-    background_tasks.add_task(_email_video_task, job_id, to)
+    share = (request.share_url or "").strip() if request else ""
+    # Only our own watch-page link for this job, signed for this job - never an arbitrary URL.
+    if not (share.startswith(("http://", "https://")) and f"#/watch/{job_id}?" in share and security.media_sig(job_id) in share):
+        share = ""
+    background_tasks.add_task(_email_video_task, job_id, to, share or None)
     return {"queued": True, "to": mailer.mask_email(to)}
 
 

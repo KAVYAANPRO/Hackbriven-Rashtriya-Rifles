@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { emailJob } from '../api/client.js';
 import { useStore } from '../store.jsx';
 import Icon from './Icon.jsx';
+import { shareUrl } from '../pages/Watch.jsx';
 
 // Send the finished video + its manual-handoff package to any email address (defaults to the account's).
 export default function EmailVideoPanel({ job }) {
@@ -23,9 +24,9 @@ export default function EmailVideoPanel({ job }) {
     setState('busy');
     setMessage('');
     try {
-      const res = await emailJob(job.id, to.trim());
+      const res = await emailJob(job.id, to.trim(), shareUrl(job.raw));
       if (!mounted.current) return;
-      const msg = `Sending the video and handoff to ${(res && res.to) || to.trim()}`;
+      const msg = `Sent to ${(res && res.to) || to.trim()} - it should arrive within seconds`;
       setState('sent');
       setMessage(msg);
       if (showToast) showToast(msg);
@@ -52,7 +53,7 @@ export default function EmailVideoPanel({ job }) {
           disabled={busy}
           autoComplete="email"
         />
-        <p className="fine2">The video (attached, or a download link if it is large) and the manual handoff package.</p>
+        <p className="fine2">A link to watch the video and the manual handoff package. Arrives in seconds.</p>
         <button type="submit" className="btn2 btn2--primary btn2--block" disabled={busy || !valid}>
           {busy ? <><i className="spin" />Sending…</> : <><Icon name="mail" size={16} />Send video + handoff</>}
         </button>

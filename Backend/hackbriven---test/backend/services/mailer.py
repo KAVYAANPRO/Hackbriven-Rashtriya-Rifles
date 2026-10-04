@@ -238,7 +238,7 @@ def video_ready_email(
     return subject, text, html
 
 
-def send_video_email(job: Job, job_dir: Path, to: str | None = None) -> bool:
+def send_video_email(job: Job, job_dir: Path, to: str | None = None, share_url: str | None = None) -> bool:
     """Email the finished video plus its manual-handoff package to `to` (default: the job's owner).
     Never raises: returns True only if it was sent."""
     recipient = to or job.owner
@@ -255,7 +255,8 @@ def send_video_email(job: Job, job_dir: Path, to: str | None = None) -> bool:
             return False
 
         max_bytes = int(settings.email_attachment_max_mb * 1024 * 1024)
-        attach = video.stat().st_size <= max_bytes
+        # With a share-page link the email stays tiny and sends in seconds; only attach without one.
+        attach = not share_url and video.stat().st_size <= max_bytes
         attachments: list[tuple[str, str, bytes]] = []
         if attach:
             attachments.append((f"ideafeed-{job.id}.mp4", "video/mp4", video.read_bytes()))
@@ -278,7 +279,7 @@ def send_video_email(job: Job, job_dir: Path, to: str | None = None) -> bool:
         subject, text, html = video_ready_email(
             job,
             attached=attach,
-            video_url=_public_link(job.id, "video?download=true&"),
+            video_url=share_url or _public_link(job.id, "video?download=true&"),
             handoff_url=handoff_url,
             handoff_note=handoff_note,
         )
@@ -292,7 +293,7 @@ def send_video_email(job: Job, job_dir: Path, to: str | None = None) -> bool:
             subject, text, html = video_ready_email(
                 job,
                 attached=False,
-                video_url=_public_link(job.id, "video?download=true&"),
+                video_url=share_url or _public_link(job.id, "video?download=true&"),
                 handoff_url=handoff_url,
                 handoff_note=handoff_note,
             )

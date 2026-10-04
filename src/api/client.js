@@ -143,7 +143,7 @@ export const approveJob = (id, approver) => post(`/jobs/${enc(id)}/approve`, { a
 export const cancelJob = (id) => post(`/jobs/${enc(id)}/cancel`);
 export const restyleCaptions = (id, captions) => post(`/jobs/${enc(id)}/captions`, captions);
 export const publishJob = (id) => post(`/jobs/${enc(id)}/publish`);
-export const emailJob = (id, to) => post(`/jobs/${enc(id)}/email`, to ? { to } : {});
+export const emailJob = (id, to, shareUrl) => post(`/jobs/${enc(id)}/email`, { ...(to ? { to } : {}), ...(shareUrl ? { share_url: shareUrl } : {}) });
 
 // ---- uploads, boost, analytics ----
 export function uploadImages(files) {
