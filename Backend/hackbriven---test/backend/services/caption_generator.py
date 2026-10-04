@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import subprocess
 from pathlib import Path
@@ -138,3 +139,48 @@ def transcribe(audio_path: Path, *, language: Language = Language.EN) -> list[Ca
         Provider(name="local_whisper", call=lambda: _call_local_whisper(audio_path, language)),
     ]
     return call_with_fallback(providers, stage=STAGE)
+
+
+def spread_words(text: str, start: float, end: float) -> list[CaptionWord]:
+    """Time the words of `text` across [start, end], each word's share proportional to its length.
+    Used when only the speech span is known (no per-word timings), and for translated captions."""
+    tokens = text.split()
+    if not tokens:
+        return []
+    end = max(end, start + 0.1 * len(tokens))
+    weights = [len(t) + 1 for t in tokens]
+    total = float(sum(weights))
+    words: list[CaptionWord] = []
+    cursor = start
+    for token, weight in zip(tokens, weights):
+        span = (end - start) * weight / total
+        words.append(CaptionWord(word=token, start_seconds=round(cursor, 3), end_seconds=round(cursor + span, 3)))
+        cursor += span
+    return words
+
+
+def caption_words_for(audio_path: Path, narration: str, *, language: Language, duration_seconds: float) -> list[CaptionWord]:
+    """Caption words for one scene's narration, best source first:
+    1. the TTS engine's own word timings (exact words, exact timing);
+    2. Whisper timings, but only for where speech starts/ends - the words come from the script,
+       since Whisper often mishears synthetic voices;
+    3. the script spread across the whole clip."""
+    from backend.services.voice_generator import word_timings_path
+
+    sidecar = word_timings_path(audio_path)
+    if sidecar.exists():
+        try:
+            data = json.loads(sidecar.read_text(encoding="utf-8"))
+            words = [CaptionWord(word=w["word"], start_seconds=float(w["start"]), end_seconds=float(w["end"])) for w in data]
+            if words:
+                return words
+        except (OSError, ValueError, KeyError) as exc:
+            logger.warning("unreadable word timings %s: %s", sidecar, exc)
+
+    try:
+        heard = transcribe(audio_path, language=language)
+        start, end = heard[0].start_seconds, heard[-1].end_seconds
+    except Exception as exc:  # noqa: BLE001 - captions must never fail the job
+        logger.warning("no speech timings for %s (%s); spreading the script over the clip", audio_path.name, exc)
+        start, end = 0.05, max(0.1, duration_seconds - 0.05)
+    return spread_words(narration, start, end)

@@ -103,3 +103,8 @@
 /* email verification step */
 .verify-note { margin: 0; font-size: 14px; line-height: 1.5; color: var(--muted, #9aa6a0); }
 .verify-code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 26px; letter-spacing: 0.5em; text-align: center; }
+
+/* "or" separator + Continue with Google */
+.or-sep { display: flex; align-items: center; gap: 12px; color: var(--faint, #8a8f86); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.or-sep::before, .or-sep::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.3; }
+.google-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }

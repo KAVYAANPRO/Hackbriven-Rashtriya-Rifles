@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -106,6 +107,17 @@ class CaptionWord(BaseModel):
     end_seconds: float
 
 
+class CaptionSettings(BaseModel):
+    """How burned-in captions look. `language` "same" = the narration's own words; any other value
+    translates the captions into that language (the voice is unchanged)."""
+
+    enabled: bool = True
+    size: Literal["small", "medium", "large"] = "medium"
+    color: str = Field(default="#FFFFFF", pattern=r"^#[0-9A-Fa-f]{6}$")
+    highlight: str = Field(default="#FFFF00", pattern=r"^#[0-9A-Fa-f]{6}$")
+    language: Literal["same", "en", "hi", "hinglish"] = "same"
+
+
 class QualityReport(BaseModel):
     passed: bool
     width: int | None = None
@@ -140,6 +152,7 @@ class Job(BaseModel):
     style: str = "auto"  # preset id from services/styles.py
     style_prompt: str | None = None  # only for style == "custom"
     resolution: str = "1080p"  # delivery resolution id from core/plans.py
+    captions: CaptionSettings = Field(default_factory=CaptionSettings)
     provider_events: list[ProviderEvent] = Field(default_factory=list)
     topic: str
     language: Language = Language.EN

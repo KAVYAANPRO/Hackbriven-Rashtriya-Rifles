@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     provider_cooldown_seconds: float = 600.0
 
     # Resolution enhancement (all done server-side; the UI never names the service).
+    # Off: never call the AI upscaler; exports use the local ffmpeg resize only.
+    enhancer_enabled: bool = False
     # Motion clips from the video providers are only 480p - enhance them before they're spliced in.
     enhance_motion_clips: bool = True
     # fal.ai video upscaler used for motion clips and the 4K export (needs FAL_API_KEY with credit).
@@ -161,9 +163,28 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from: str = ""  # defaults to smtp_user
     smtp_from_name: str = "IdeaFeed AI"
+    # Absolute base URL of this API as the outside world reaches it (e.g. https://api.example.com),
+    # used to put signed download links in "your video is ready" emails. Empty = no links in emails.
+    public_api_url: str = ""
+    # Videos up to this size are attached to the email; bigger ones get a signed download link.
+    # 18 MB stays under Gmail's 25 MB message cap after base64 inflates it by ~33%.
+    email_attachment_max_mb: float = 18.0
     # "auto" = new accounts must confirm their email whenever SMTP is configured; "on" / "off" force it.
     email_verification: str = "auto"
     verification_code_ttl_minutes: int = 15
+
+    # Clerk ("Continue with Google") - an extra sign-in method next to email + password.
+    # POST /auth/clerk verifies a Clerk session JWT against the instance's JWKS and exchanges it for
+    # this app's own session token. Set CLERK_SECRET_KEY plus one of CLERK_ISSUER (the Frontend API
+    # URL, e.g. https://xxx.clerk.accounts.dev), CLERK_JWKS_URL, or CLERK_PUBLISHABLE_KEY (the issuer
+    # is derived from it). All empty = Clerk sign-in disabled (the endpoint answers 503).
+    clerk_secret_key: str = ""
+    clerk_issuer: str = ""
+    clerk_jwks_url: str = ""
+    clerk_publishable_key: str = ""
+    # Optional comma-separated origins allowed in the token's "azp" claim (e.g. https://app.example.com).
+    clerk_authorized_parties: str = ""
+    clerk_api_url: str = "https://api.clerk.com/v1"
 
     # Reference-image uploads
     max_upload_images: int = 8
@@ -237,6 +258,40 @@ class Settings(BaseSettings):
     @property
     def has_fal(self) -> bool:
         return bool(self.fal_api_key)
+
+    @property
+    def clerk_issuer_url(self) -> str:
+        """The Clerk Frontend API URL: CLERK_ISSUER, else decoded from CLERK_PUBLISHABLE_KEY."""
+        if self.clerk_issuer.strip():
+            return self.clerk_issuer.strip().rstrip("/")
+        pk = self.clerk_publishable_key.strip()
+        parts = pk.split("_", 2)
+        if len(parts) == 3 and parts[0] == "pk":
+            import base64
+
+            try:
+                raw = parts[2] + "=" * (-len(parts[2]) % 4)
+                host = base64.b64decode(raw).decode("utf-8").rstrip("$").strip()
+            except (ValueError, UnicodeDecodeError):
+                return ""
+            if host and "/" not in host:
+                return f"https://{host}"
+        return ""
+
+    @property
+    def clerk_jwks(self) -> str:
+        if self.clerk_jwks_url.strip():
+            return self.clerk_jwks_url.strip()
+        issuer = self.clerk_issuer_url
+        return f"{issuer}/.well-known/jwks.json" if issuer else ""
+
+    @property
+    def has_clerk(self) -> bool:
+        return bool(self.clerk_jwks)
+
+    @property
+    def clerk_authorized_party_list(self) -> list[str]:
+        return [p.strip().rstrip("/") for p in self.clerk_authorized_parties.split(",") if p.strip()]
 
     @property
     def has_razorpay(self) -> bool:

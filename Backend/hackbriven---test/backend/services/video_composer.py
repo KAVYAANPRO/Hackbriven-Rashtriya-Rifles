@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+import contextvars
 import logging
+import os
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from backend.config import settings
 from backend.core.exceptions import CompositionError
-from backend.models.schemas import MotionTier, SceneAssets
+from backend.models.schemas import CaptionSettings, MotionTier, SceneAssets
 from backend.services import motion_generator, upscaler
-from backend.utils.ffmpeg_utils import run_ffmpeg
+from backend.utils.ffmpeg_utils import probe, run_ffmpeg
+
+_MAX_MOTION_STRETCH = 1.6
+# Intermediate encodes: fast preset, near-lossless quality (only the final mux is delivered).
+_FAST_X264 = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "18"]
+_SCENE_WORKERS = max(1, min(4, (os.cpu_count() or 2) // 2))
 
 logger = logging.getLogger(__name__)
 
@@ -27,22 +35,45 @@ def _ass_timestamp(seconds: float) -> str:
     return f"{hours:01d}:{minutes:02d}:{secs:02d}.{centis:02d}"
 
 
-def build_ass_captions(scenes: list[SceneAssets], out_path: Path) -> Path:
+_CAPTION_FONT_SIZE = {"small": 44, "medium": 58, "large": 76}  # at 1080px width
+_CAPTION_HOLD_SECONDS = 0.6  # how long the last phrase of a pause stays on screen
+
+
+def _ass_color(hex_color: str) -> str:
+    """'#RRGGBB' -> ASS '&H00BBGGRR' (ASS stores colours as alpha+BGR)."""
+    r, g, b = hex_color[1:3], hex_color[3:5], hex_color[5:7]
+    return f"&H00{b}{g}{r}".upper()
+
+
+def _ffmpeg_filter_path(path: Path) -> str:
+    # Inside a filter argument ':' separates options, so a Windows drive colon must be escaped.
+    return "'" + path.as_posix().replace(":", "\\:") + "'"
+
+
+def build_ass_captions(scenes: list[SceneAssets], out_path: Path, *, style: CaptionSettings | None = None) -> Path:
     """Render phrase-grouped captions (a few words at a time, like CapCut/
-    TikTok-style captions) with the currently-spoken word highlighted in
-    yellow, rather than one bare word flashing alone on screen.
+    TikTok-style captions) with the currently-spoken word highlighted.
+
+    Each word stays on screen until the next word starts (no blank flicker between
+    words); the last phrase before a pause is held briefly, never past its scene.
 
     Pure/offline: no ffmpeg call, so this is directly unit-testable.
     """
+    style = style or CaptionSettings()
+    scale = settings.target_width / 1080
+    font_size = round(_CAPTION_FONT_SIZE[style.size] * scale)
+    text_color = _ass_color(style.color)
+    highlight_color = _ass_color(style.highlight)
     header = (
         "[Script Info]\n"
         "ScriptType: v4.00+\n"
         f"PlayResX: {settings.target_width}\n"
-        f"PlayResY: {settings.target_height}\n\n"
+        f"PlayResY: {settings.target_height}\n"
+        "WrapStyle: 0\n\n"
         "[V4+ Styles]\n"
         "Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, "
         "BackColour, Bold, Outline, Shadow, Alignment, MarginL, MarginR, MarginV\n"
-        "Style: Caption,Arial,58,&H00FFFFFF,&H00000000,&H80000000,1,3,1,2,60,60,180\n\n"
+        f"Style: Caption,Arial,{font_size},{text_color},&H00000000,&H80000000,1,3,1,2,60,60,{round(180 * scale)}\n\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Text\n"
     )
@@ -50,21 +81,31 @@ def build_ass_captions(scenes: list[SceneAssets], out_path: Path) -> Path:
     lines: list[str] = []
     offset = 0.0
     for scene in sorted(scenes, key=lambda s: s.index):
-        words = scene.caption_words
+        words = [w for w in scene.caption_words if w.word.strip()]
         for group_start in range(0, len(words), _CAPTION_GROUP_SIZE):
             group = words[group_start:group_start + _CAPTION_GROUP_SIZE]
+            next_group_start = (
+                words[group_start + _CAPTION_GROUP_SIZE].start_seconds
+                if group_start + _CAPTION_GROUP_SIZE < len(words)
+                else None
+            )
             for highlight_idx, active_word in enumerate(group):
-                # word.start_seconds/end_seconds are local to this scene's own
-                # audio clip (Whisper transcribes each scene's audio in
-                # isolation, starting at 0) - shift by every preceding
-                # scene's duration to land at the right time in the final
-                # concatenated video.
+                # Word times are local to this scene's own audio clip - shift by every
+                # preceding scene's duration to land at the right time in the final video.
+                if highlight_idx + 1 < len(group):
+                    local_end = group[highlight_idx + 1].start_seconds
+                else:
+                    held = active_word.end_seconds + _CAPTION_HOLD_SECONDS
+                    local_end = min(held, next_group_start) if next_group_start is not None else held
+                local_end = min(max(local_end, active_word.end_seconds), scene.duration_seconds)
+                if local_end <= active_word.start_seconds:
+                    continue
                 start = _ass_timestamp(offset + active_word.start_seconds)
-                end = _ass_timestamp(offset + active_word.end_seconds)
+                end = _ass_timestamp(offset + local_end)
                 rendered_words = []
                 for word_idx, word in enumerate(group):
                     if word_idx == highlight_idx:
-                        rendered_words.append(f"{{\\c{_HIGHLIGHT_COLOR}}}{word.word}{{\\c{_BASE_COLOR}}}")
+                        rendered_words.append(f"{{\\c{highlight_color}&}}{word.word}{{\\c{text_color}&}}")
                     else:
                         rendered_words.append(word.word)
                 phrase = " ".join(rendered_words)
@@ -117,6 +158,7 @@ def _build_scene_clip(image_path: Path, duration_seconds: float, out_path: Path,
             "-i", str(image_path),
             "-t", str(duration_seconds),
             "-vf", zoompan,
+            *_FAST_X264,
             str(out_path),
         ],
         stage=f"{STAGE}.ken_burns",
@@ -131,10 +173,21 @@ def _normalize_clip(raw_path: Path, duration_seconds: float, out_path: Path) -> 
     chain's duration math depends on every clip being precisely this long -
     an unconformed clip would silently desync the whole timeline."""
     width, height = settings.target_width, settings.target_height
+    # Providers return fixed 3-5s clips, often shorter than the scene's narration: slow the clip
+    # down (up to _MAX_MOTION_STRETCH) and hold its last frame for the rest, so it is never short.
+    try:
+        raw_duration = float(probe(raw_path)["format"]["duration"])
+    except Exception:  # noqa: BLE001 - unknown length: rely on the last-frame hold alone
+        raw_duration = 0.0
+    stretch = 1.0
+    if 0 < raw_duration < duration_seconds:
+        stretch = min(_MAX_MOTION_STRETCH, duration_seconds / raw_duration)
     vf = (
+        f"setpts={stretch:.4f}*PTS,"
         f"scale={width}:{height}:force_original_aspect_ratio=increase,"
         f"crop={width}:{height},"
         f"fps={_FPS},"
+        f"tpad=stop_mode=clone:stop_duration={duration_seconds:.3f},"
         f"format=yuv420p"
     )
     run_ffmpeg(
@@ -143,6 +196,7 @@ def _normalize_clip(raw_path: Path, duration_seconds: float, out_path: Path) -> 
             "-t", str(duration_seconds),
             "-vf", vf,
             "-an",
+            *_FAST_X264,
             str(out_path),
         ],
         stage=f"{STAGE}.normalize_motion",
@@ -214,6 +268,7 @@ def _crossfade_video(clip_paths: list[Path], durations: list[float], out_path: P
             *inputs,
             "-filter_complex", filter_complex,
             "-map", f"[{node}]",
+            *_FAST_X264,
             str(out_path),
         ],
         stage=f"{STAGE}.crossfade",
@@ -251,8 +306,11 @@ def compose(
     *,
     music_path: Path | None = None,
     motion_tier: MotionTier = MotionTier.BALANCED,
+    captions: CaptionSettings | None = None,
+    caption_scenes: list[SceneAssets] | None = None,
 ) -> Path:
     """Combine per-scene images + audio + captions into one publish-ready MP4.
+    `caption_scenes` overrides the words shown (e.g. translated captions); defaults to `scenes`.
 
     Pipeline: per-scene clip (real generative motion for scenes selected by
     motion_tier when MAGIC_HOUR_API_KEY is configured, Ken Burns for the
@@ -275,8 +333,7 @@ def compose(
         else set()
     )
 
-    scene_clip_paths: list[Path] = []
-    for i, scene in enumerate(ordered_scenes):
+    def build_clip(i: int, scene: SceneAssets) -> Path:
         clip_path = job_dir / f"scene_{scene.index:02d}_clip.mp4"
         # Every clip except the last is rendered TRANSITION_DURATION seconds
         # longer than its nominal duration, so the xfade overlap has real
@@ -294,7 +351,16 @@ def compose(
 
         if not made_motion_clip:
             _build_scene_clip(Path(scene.image_path), render_duration, clip_path, variant=scene.index)
-        scene_clip_paths.append(clip_path)
+        return clip_path
+
+    # Each scene is an independent ffmpeg render: run them side by side, in scene order. Each task
+    # runs in a copy of this context so the job's provider-attempt sink (a ContextVar) still applies.
+    with ThreadPoolExecutor(max_workers=_SCENE_WORKERS) as pool:
+        futures = [
+            pool.submit(contextvars.copy_context().run, build_clip, i, scene)
+            for i, scene in enumerate(ordered_scenes)
+        ]
+        scene_clip_paths: list[Path] = [f.result() for f in futures]
 
     silent_video = job_dir / "silent.mp4"
     if has_transitions:
@@ -306,25 +372,43 @@ def compose(
     narration_audio = job_dir / "narration.wav"
     _concat_media(audio_paths, narration_audio, job_dir / "audio_concat.txt")
 
-    captions_path = build_ass_captions(scenes, job_dir / "captions.ass")
-
-    with_captions = job_dir / "with_captions.mp4"
-    run_ffmpeg(
-        [
-            "-i", str(silent_video),
-            "-vf", f"subtitles={captions_path.as_posix()}",
-            "-an",
-            str(with_captions),
-        ],
-        stage=f"{STAGE}.captions",
+    return finish_video(
+        job_dir, silent_video, narration_audio, caption_scenes or scenes, captions or CaptionSettings(), music_path
     )
+
+
+def finish_video(
+    job_dir: Path,
+    silent_video: Path,
+    narration_audio: Path,
+    caption_scenes: list[SceneAssets],
+    captions: CaptionSettings,
+    music_path: Path | None,
+) -> Path:
+    """Burn captions (unless switched off) onto the silent video and mux the final audio. Also used
+    on its own to re-style the captions of a finished job without re-rendering any scene."""
+    if captions.enabled:
+        captions_path = build_ass_captions(caption_scenes, job_dir / "captions.ass", style=captions)
+        video_track = job_dir / "with_captions.mp4"
+        run_ffmpeg(
+            [
+                "-i", str(silent_video),
+                "-vf", f"subtitles={_ffmpeg_filter_path(captions_path)}",
+                "-an",
+                *_FAST_X264,
+                str(video_track),
+            ],
+            stage=f"{STAGE}.captions",
+        )
+    else:
+        video_track = silent_video
 
     final_path = job_dir / "final.mp4"
     audio_filter = "loudnorm=I=-16:TP=-1.5:LRA=11"
-    if music_path is not None:
+    if music_path is not None and Path(music_path).exists():
         run_ffmpeg(
             [
-                "-i", str(with_captions),
+                "-i", str(video_track),
                 "-i", str(narration_audio),
                 "-i", str(music_path),
                 "-filter_complex",
@@ -333,7 +417,7 @@ def compose(
                 f"[1:a][ducked]amix=inputs=2:duration=first,{audio_filter}[aout]",
                 "-map", "0:v",
                 "-map", "[aout]",
-                "-c:v", "libx264",
+                "-c:v", "copy",
                 "-c:a", "aac",
                 str(final_path),
             ],
@@ -342,12 +426,12 @@ def compose(
     else:
         run_ffmpeg(
             [
-                "-i", str(with_captions),
+                "-i", str(video_track),
                 "-i", str(narration_audio),
                 "-filter:a", audio_filter,
                 "-map", "0:v",
                 "-map", "1:a",
-                "-c:v", "libx264",
+                "-c:v", "copy",
                 "-c:a", "aac",
                 str(final_path),
             ],

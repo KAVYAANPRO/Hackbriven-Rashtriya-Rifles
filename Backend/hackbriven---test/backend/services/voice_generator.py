@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from pathlib import Path
 
@@ -23,13 +24,31 @@ def _voice_for_language(language: Language) -> str:
     return _VOICE_BY_LANGUAGE[language]()
 
 
+def word_timings_path(audio_path: Path) -> Path:
+    """Sidecar holding the exact per-word timings the TTS engine reported for this audio."""
+    return audio_path.with_suffix(".words.json")
+
+
 async def _synthesize_async(text: str, out_path: Path, voice: str) -> Path:
     import edge_tts
 
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(str(out_path))
+    communicate = edge_tts.Communicate(text, voice, boundary="WordBoundary")
+    words: list[dict] = []
+    with out_path.open("wb") as audio:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                # offset/duration are in 100-nanosecond ticks
+                start = chunk["offset"] / 1e7
+                words.append({"word": chunk["text"], "start": start, "end": start + chunk["duration"] / 1e7})
     if not out_path.exists() or out_path.stat().st_size == 0:
         raise RuntimeError("edge-tts produced an empty audio file")
+    sidecar = word_timings_path(out_path)
+    if words:
+        sidecar.write_text(json.dumps(words, ensure_ascii=False), encoding="utf-8")
+    else:
+        sidecar.unlink(missing_ok=True)
     return out_path
 
 
@@ -53,6 +72,7 @@ _GTTS_LANG_BY_LANGUAGE = {
 def _call_gtts(text: str, out_path: Path, language: Language) -> Path:
     from gtts import gTTS
 
+    word_timings_path(out_path).unlink(missing_ok=True)  # gTTS reports no timings
     tts = gTTS(text=text, lang=_GTTS_LANG_BY_LANGUAGE[language])
     tts.save(str(out_path))
     if not out_path.exists() or out_path.stat().st_size == 0:

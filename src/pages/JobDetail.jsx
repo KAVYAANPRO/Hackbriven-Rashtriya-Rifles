@@ -8,6 +8,9 @@ import { useNow, useStore } from '../store.jsx';
 import { ErrorState, Pill, Skeleton } from '../components/common.jsx';
 import Icon from '../components/Icon.jsx';
 import DownloadMenu from '../components/DownloadMenu.jsx';
+import EmailVideoPanel from '../components/EmailVideoButton.jsx';
+import { shareUrl, useQr } from './Watch.jsx';
+import CaptionControls, { normalizeCaptions } from '../components/CaptionControls.jsx';
 
 const NOT_CANCELLABLE = ['approved', 'manual_handoff', 'published', 'failed', 'cancelled', 'publish_failed'];
 
@@ -48,6 +51,55 @@ function SceneTiles({ j }) {
   );
 }
 
+// The file is re-rendered in place when captions change: version the URL so the browser refetches it.
+const withVersion = (url, v) => (v ? `${url}${url.includes('?') ? '&' : '?'}v=${v}` : url);
+
+function CaptionsPanel({ j, busy, onApply }) {
+  const saved = normalizeCaptions(j.captions);
+  const [draft, setDraft] = useState(saved);
+  const savedKey = JSON.stringify(saved);
+  useEffect(() => { setDraft(normalizeCaptions(JSON.parse(savedKey))); }, [j.id, savedKey]);
+  const changed = JSON.stringify(normalizeCaptions(draft)) !== savedKey;
+  const working = busy === 'captions';
+  return (
+    <section className="panel spot-card rise" style={{ '--i': 6 }}>
+      <div className="panel-head"><h3>Captions</h3><span className="mono">{saved.enabled ? saved.size : 'off'}</span></div>
+      <CaptionControls value={draft} onChange={setDraft} disabled={!!busy} />
+      <div className="capx-apply">
+        <button type="button" className="btn2 btn2--primary btn2--block" disabled={!changed || !!busy} onClick={() => onApply(draft)}>
+          {working ? <><i className="spin" />Updating the video…</> : <><Icon name="refresh" size={16} />Apply to video</>}
+        </button>
+        {working && <p className="fine2" role="status">Re-rendering captions only. This usually takes under a minute.</p>}
+      </div>
+    </section>
+  );
+}
+
+function SharePanel({ j }) {
+  const url = shareUrl(j.raw);
+  const qr = useQr(url, 140);
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* clipboard blocked */ }
+  };
+  return (
+    <section className="panel spot-card rise" style={{ '--i': 5 }}>
+      <div className="panel-head"><h3>Share</h3><span className="mono">public link</span></div>
+      <div className="share-box">
+        {qr && <img src={qr} alt="QR code for the share link" width={120} height={120} />}
+        <div>
+          <p className="fine2">Anyone with this link can watch, no sign-in. Scan to open on a phone.</p>
+          <div className="capx-apply">
+            <button type="button" className="btn2 btn2--primary btn2--sm" onClick={copy}><Icon name={copied ? 'check' : 'layers'} size={14} />{copied ? 'Copied' : 'Copy link'}</button>
+            <a className="btn2 btn2--ghost btn2--sm" href={url} target="_blank" rel="noreferrer">Open page</a>
+          </div>
+          <p className="share-url mono">{url}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function VideoPlayer({ j }) {
   const [failed, setFailed] = useState(false);
   const poster = j.readyScenes.includes(0) ? sceneImageUrl(j.raw, 0) : undefined;
@@ -62,7 +114,8 @@ function VideoPlayer({ j }) {
         playsInline
         preload="metadata"
         poster={poster}
-        src={videoUrl(j.raw)}
+        key={j.updated}
+        src={withVersion(videoUrl(j.raw), j.updated)}
         onError={() => setFailed(true)}
       />
       {failed && (
@@ -175,7 +228,7 @@ function DetailSkeleton() {
 export default function JobDetail() {
   const {
     job: j, jobId, jobStatus, jobError, jobStale, jobAction, retryJob, refreshJob, go, approver, setApprover,
-    approve, publish, retryAsNew, setCancelOpen, cancelOpen, pricing,
+    approve, publish, retryAsNew, setCancelOpen, cancelOpen, pricing, restyleCaptions,
   } = useStore();
   const st = j ? j.status : '';
   const now = useNow(!!j && (j.live || st === 'publishing'));
@@ -396,6 +449,12 @@ export default function JobDetail() {
               )}
             </section>
           )}
+
+          {done && j.hasVideo && <SharePanel j={j} />}
+
+          {done && j.hasVideo && <EmailVideoPanel job={j} />}
+
+          {done && j.hasVideo && <CaptionsPanel j={j} busy={busy} onApply={(c) => restyleCaptions(j.id, c)} />}
 
           {st === 'done' && (
             <section className="panel spot-card approve rise" style={{ '--i': 6 }}>

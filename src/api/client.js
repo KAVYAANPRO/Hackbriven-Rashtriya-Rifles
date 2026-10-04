@@ -122,6 +122,7 @@ export const plans = (opts) => get('/plans', { ...opts, auth: false });
 // ---- accounts ----
 export const register = (email, password) => post('/auth/register', { email, password }, { auth: false });
 export const login = (email, password) => post('/auth/login', { email, password }, { auth: false });
+export const loginWithClerk = (token) => post('/auth/clerk', { token }, { auth: false }); // Clerk session JWT -> app session
 export const verifyEmail = (email, code) => post('/auth/verify-email', { email, code }, { auth: false });
 export const resendCode = (email) => post('/auth/resend-code', { email }, { auth: false });
 export const me = (opts) => get('/auth/me', opts);
@@ -140,7 +141,9 @@ export const getResult = (id, opts) => get(`/jobs/${enc(id)}/result`, opts);
 export const getQualityReport = (id, opts) => get(`/jobs/${enc(id)}/quality-report`, opts);
 export const approveJob = (id, approver) => post(`/jobs/${enc(id)}/approve`, { approver });
 export const cancelJob = (id) => post(`/jobs/${enc(id)}/cancel`);
+export const restyleCaptions = (id, captions) => post(`/jobs/${enc(id)}/captions`, captions);
 export const publishJob = (id) => post(`/jobs/${enc(id)}/publish`);
+export const emailJob = (id, to, shareUrl) => post(`/jobs/${enc(id)}/email`, { ...(to ? { to } : {}), ...(shareUrl ? { share_url: shareUrl } : {}) });
 
 // ---- uploads, boost, analytics ----
 export function uploadImages(files) {

@@ -11,6 +11,7 @@ from backend.core.job_manager import JobManager
 from backend.models.schemas import JobStatus, Language, ProviderEvent, SceneAssets, ScenePlanSet
 from backend.services import (
     caption_generator,
+    captions,
     image_generator,
     music_generator,
     exporter,
@@ -60,7 +61,6 @@ def _generate_scene_assets(
                 styles.apply_to_image_prompt(scene.image_prompt, style, style_prompt), image_path
             )
         voice_generator.synthesize(scene.narration, audio_path, language=language)
-        caption_words = caption_generator.transcribe(audio_path, language=language)
 
         # The script's duration_seconds is only ever a guess (an LLM or the
         # local template estimating how long narration "should" take to
@@ -69,6 +69,9 @@ def _generate_scene_assets(
         # sync and the quality gate correctly rejects the result. Always
         # measure the real synthesized audio instead of trusting the guess.
         actual_duration = get_duration_seconds(audio_path)
+        caption_words = caption_generator.caption_words_for(
+            audio_path, scene.narration, language=language, duration_seconds=actual_duration
+        )
 
         assets.append(
             SceneAssets(
@@ -92,7 +95,14 @@ def _expected_size(job) -> dict:
 def _compose_and_deliver(assets: list[SceneAssets], job, music_path: Path | None) -> Path:
     """Compose the 1080p master, then deliver it at the resolution the user chose."""
     job_dir = _job_dir(job.id)
-    composed = video_composer.compose(assets, job_dir, music_path=music_path, motion_tier=job.motion_tier)
+    composed = video_composer.compose(
+        assets,
+        job_dir,
+        music_path=music_path,
+        motion_tier=job.motion_tier,
+        captions=job.captions,
+        caption_scenes=captions.display_scenes(captions.load_source(job_dir), job.captions, job.language),
+    )
     return exporter.deliver_at_resolution(job_dir, composed, job.resolution)
 
 
@@ -136,6 +146,7 @@ def run(job_id: str, job_manager: JobManager, *, topic: str | None = None) -> No
         ]
         assets = _generate_scene_assets(job_id, plan, job.language, reference_paths, job.style, job.style_prompt)
         expected_duration = sum(asset.duration_seconds for asset in assets)
+        captions.save_source(_job_dir(job_id), assets, {sc.index: sc.narration for sc in plan.scenes})
 
         if _cancelled():
             return

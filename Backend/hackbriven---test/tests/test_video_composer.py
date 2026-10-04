@@ -138,9 +138,13 @@ def test_compose_extends_non_last_clips_for_transition_overlap(mock_run_ffmpeg, 
     job_dir = tmp_path / "job"
     video_composer.compose(sample_scene_assets, job_dir)
 
-    ken_burns_calls = [c for c in mock_run_ffmpeg.call_args_list if "ken_burns" in c.kwargs["stage"]]
-    first_clip_args = ken_burns_calls[0].args[0]
-    last_clip_args = ken_burns_calls[-1].args[0]
+    # Scene clips render in parallel, so pick each call by its output file, not by call order.
+    ken_burns_calls = {
+        Path(c.args[0][-1]).name: c.args[0] for c in mock_run_ffmpeg.call_args_list if "ken_burns" in c.kwargs["stage"]
+    }
+    ordered = sorted(sample_scene_assets, key=lambda s: s.index)
+    first_clip_args = ken_burns_calls[f"scene_{ordered[0].index:02d}_clip.mp4"]
+    last_clip_args = ken_burns_calls[f"scene_{ordered[-1].index:02d}_clip.mp4"]
     first_t_index = first_clip_args.index("-t")
     last_t_index = last_clip_args.index("-t")
 

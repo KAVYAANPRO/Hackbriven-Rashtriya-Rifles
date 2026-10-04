@@ -11,6 +11,7 @@ import ShapeGrid from '../ShapeGrid.jsx';
 import StyleArt from './StyleArt.jsx';
 import ImageDrop from './ImageDrop.jsx';
 import { GRID_COLORS } from './PromptStep.jsx';
+import CaptionControls from '../CaptionControls.jsx';
 
 // Group the style list by style.group, keeping the server's order (a group sits where its first style is).
 function groupStyles(list) {
@@ -84,7 +85,7 @@ export default function OptionsStep({ onEdit, images }) {
   const {
     topic, lang, setLang, tier, setTier, tiers, tiersAllowed, pricing, pricingError, credits, generate, gen, clearGenError,
     setTopupOpen, go, style, setStyle, styleText, setStyleText, resolution, setResolution, resolutionsAllowed,
-    providers, refreshProviders,
+    providers, refreshProviders, captions, setCaptions,
   } = useStore();
   const headRef = useRef(null);
   const [theme] = useTheme();
@@ -300,6 +301,12 @@ export default function OptionsStep({ onEdit, images }) {
 
       <section className="panel spot-card cx-panel">
         <div className="field2">
+          <CaptionControls value={captions} onChange={setCaptions} disabled={busy} />
+        </div>
+      </section>
+
+      <section className="panel spot-card cx-panel">
+        <div className="field2">
           <div className="field2-head">
             <label>Reference images</label>
             <span className="mono">optional</span>
@@ -317,6 +324,7 @@ export default function OptionsStep({ onEdit, images }) {
           {resolutions.length > 0 && (
             <div><dt>Resolution</dt><dd>{resPicked ? (resPicked.label || resPicked.id) : resolution}</dd></div>
           )}
+          <div><dt>Captions</dt><dd>{captions.enabled ? `${captions.size}${captions.language !== 'same' ? ` · ${captions.language}` : ''}` : 'Off'}</dd></div>
           <div><dt>Images</dt><dd>{images.files.length === 0 ? 'None' : images.files.length}</dd></div>
           <div>
             <dt>Cost</dt>

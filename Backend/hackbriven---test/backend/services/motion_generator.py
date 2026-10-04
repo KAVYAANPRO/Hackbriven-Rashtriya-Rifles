@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import base64
+import hashlib
+import json
 import logging
+import threading
 import time
 from pathlib import Path
 
@@ -15,7 +18,91 @@ logger = logging.getLogger(__name__)
 STAGE = "composition.motion"
 
 _POLL_INTERVAL_SECONDS = 5.0
-_POLL_TIMEOUT_SECONDS = 180.0
+_POLL_TIMEOUT_SECONDS = 120.0
+
+# A key that answers 401/402/403/404 is used up or invalid: it is never called again (remembered on
+# disk across restarts, by hash - the file holds no secrets). 429 is a temporary rate limit and only
+# parks the key for an hour. At most this many live keys per provider are tried per scene, so the
+# hand-off to the next provider stays quick.
+_EXHAUSTED_STATUS = {401, 402, 403, 404}
+_RATE_LIMIT_STATUS = 429
+_RATE_LIMIT_SECONDS = 3600.0
+_MAX_KEYS_PER_PROVIDER = 3
+_dead_keys_lock = threading.Lock()
+_dead_keys: dict[str, float | None] | None = None  # fingerprint -> retry-after epoch, None = forever
+
+
+def _fingerprint(key: str) -> str:
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+
+
+def _dead_keys_file() -> Path | None:
+    try:
+        return Path(settings.storage_dir) / "motion_dead_keys.json"  # storage/jobs is gitignored
+    except TypeError:
+        return None
+
+
+def _load_dead_keys() -> dict[str, float | None]:
+    global _dead_keys
+    if _dead_keys is None:
+        _dead_keys = {}
+        path = _dead_keys_file()
+        try:
+            if path and path.exists():
+                _dead_keys = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            logger.warning("could not read %s; starting with no remembered dead keys", path)
+    return _dead_keys
+
+
+def _mark_dead(key: str, until: float | None) -> None:
+    with _dead_keys_lock:
+        dead = _load_dead_keys()
+        dead[_fingerprint(key)] = until
+        path = _dead_keys_file()
+        try:
+            if path:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(dead), encoding="utf-8")
+        except OSError:
+            logger.warning("could not persist dead motion key list to %s", path)
+
+
+def _key_is_dead(key: str) -> bool:
+    with _dead_keys_lock:
+        dead = _load_dead_keys()
+        fp = _fingerprint(key)
+        if fp not in dead:
+            return False
+        until = dead[fp]
+        return until is None or until > time.time()
+
+
+def _guarded(call, key: str):
+    try:
+        return call()
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        if status in _EXHAUSTED_STATUS:
+            _mark_dead(key, None)
+            logger.warning("motion key ...%s is used up/invalid (%s); it will not be called again", key[-4:], status)
+        elif status == _RATE_LIMIT_STATUS:
+            _mark_dead(key, time.time() + _RATE_LIMIT_SECONDS)
+            logger.warning("motion key ...%s rate-limited; parked for %ss", key[-4:], int(_RATE_LIMIT_SECONDS))
+        raise
+
+
+_MOTION_PROMPT_SUFFIX = (
+    "Animate this exact image: smooth cinematic camera movement, natural subtle motion of the subject "
+    "and background, keep the composition and style, no new text, no cuts."
+)
+
+
+def _motion_prompt(image_prompt: str) -> str:
+    """Image prompts describe a still frame; video models need to be told how it should move."""
+    base = " ".join(image_prompt.split())[:500]
+    return f"{base}. {_MOTION_PROMPT_SUFFIX}" if base else _MOTION_PROMPT_SUFFIX
 
 
 class MotionGenerationError(RuntimeError):
@@ -173,19 +260,24 @@ def generate_motion_clip(image_path: Path, prompt: str, duration_seconds: float,
     produced - callers must normalize it to match the rest of the
     pipeline's clips before splicing it into the crossfade timeline.
     """
-    eightscale_keys = settings.eightscale_key_pool
-    magic_hour_keys = settings.magic_hour_key_pool
+    prompt = _motion_prompt(prompt)
+    eightscale_keys = [k for k in settings.eightscale_key_pool if not _key_is_dead(k)][:_MAX_KEYS_PER_PROVIDER]
+    magic_hour_keys = [k for k in settings.magic_hour_key_pool if not _key_is_dead(k)][:_MAX_KEYS_PER_PROVIDER]
 
     providers = [
         Provider(
             name=f"eightscale[{i + 1}/{len(eightscale_keys)}]",
-            call=lambda key=key: _call_eightscale(image_path, prompt, duration_seconds, out_path, api_key=key),
+            call=lambda key=key: _guarded(
+                lambda: _call_eightscale(image_path, prompt, duration_seconds, out_path, api_key=key), key
+            ),
         )
         for i, key in enumerate(eightscale_keys)
     ] + [
         Provider(
             name=f"magic_hour[{i + 1}/{len(magic_hour_keys)}]",
-            call=lambda key=key: _call_magic_hour(image_path, prompt, duration_seconds, out_path, api_key=key),
+            call=lambda key=key: _guarded(
+                lambda: _call_magic_hour(image_path, prompt, duration_seconds, out_path, api_key=key), key
+            ),
         )
         for i, key in enumerate(magic_hour_keys)
     ]
