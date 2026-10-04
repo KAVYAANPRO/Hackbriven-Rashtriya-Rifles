@@ -6,6 +6,7 @@ import { LogoMark } from './Logo.jsx';
 import { ErrorState } from './common.jsx';
 import { CountUp } from './deck/parts.jsx';
 import { usePlanDialog } from './planDialogBus.js';
+import { useTheme } from '../theme.js';
 
 const NAV_ICON = { create: 'create', jobs: 'jobs', orchestra: 'orchestra', analytics: 'analytics', credits: 'credits', settings: 'settings' };
 
@@ -89,9 +90,11 @@ function statusView(sys) {
 
 function TopBar({ topRef }) {
   const { route, jobs, credits, go, signOut, systemReady, user } = useStore();
+  const [theme, toggleTheme] = useTheme();
   const active = jobs.find((j) => j.live);
   const label = navFor(user).find(([, k]) => k === (route === 'job' ? 'jobs' : route));
   const sv = statusView(systemReady);
+  const isLight = theme === 'light';
   return (
     <header className="st-top" ref={topRef}>
       <div className="st-crumb">
@@ -104,6 +107,15 @@ function TopBar({ topRef }) {
         <div className="st-status" title="GET /ready" role="status"><i className={'live ' + sv.cls} />{sv.label}</div>
         <button type="button" className="st-pill-credits" onClick={() => go('credits')}>
           <Icon name="bolt" size={14} /><b>{credits == null ? '—' : credits}</b>
+        </button>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={toggleTheme}
+          aria-label={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+          title={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+        >
+          <Icon name={isLight ? 'moon' : 'sun'} size={17} />
         </button>
         <button type="button" className="icon-btn" onClick={signOut} aria-label="Sign out" title="Sign out">
           <Icon name="logout" size={17} />

@@ -25,6 +25,8 @@ const PATHS = {
   layers: <path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5" />,
   plus: <path d="M12 5v14M5 12h14" />,
   lock: <><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>,
+  sun: <><circle cx="12" cy="12" r="4.5" /><path d="M12 2.5v3M12 18.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2.5 12h3M18.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
+  moon: <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" />,
 };
 
 export default function Icon({ name, size = 18, className = '' }) {

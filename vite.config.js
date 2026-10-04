@@ -19,10 +19,15 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true,
     proxy: {
+      // Proxied server-to-server so the browser never talks to the real
+      // backend directly in dev - that backend's CORS allowlist only
+      // includes the production site origin, not localhost.
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://hackbriven-rashtriya-rifles.onrender.com',
         changeOrigin: true,
+        secure: true,
         rewrite: (p) => p.replace(/^\/api/, ''),
       },
     },

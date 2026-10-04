@@ -1,7 +1,19 @@
 /* ============ Landing deck ============ */
 html.deck-lock, html.deck-lock body { overflow: hidden; height: 100%; overscroll-behavior: none; }
 
-.deck { position: fixed; inset: 0; background: #050909; color: var(--color-text); --p: 0; }
+/* The marketing deck is a fixed cinematic dark hero - it keeps its original
+   dark palette regardless of the app's light/dark toggle, so every child
+   rule reading var(--color-*) still resolves to the colors it was built for. */
+.deck {
+  position: fixed; inset: 0; background: #050909; --p: 0;
+  --color-bg: #070d0d;
+  --color-surface: #111a1a;
+  --color-text: #f4ebc3;
+  --color-accent: #b4e768;
+  --color-accent-600: #c4ea7f;
+  --ink: #070d0d;
+  color: #f4ebc3;
+}
 .stage { position: absolute; inset: 0; overflow: hidden; }
 
 /* ---- glow that bleeds out of the card ---- */
@@ -19,8 +31,8 @@ html.deck-lock, html.deck-lock body { overflow: hidden; height: 100%; overscroll
 .glow--lime .floor { background: radial-gradient(ellipse at 50% 0%, rgba(180,231,104,0.7), rgba(0,100,110,0.3) 62%, transparent 75%); }
 
 /* ---- the full-screen stage ---- */
-.card {
-  position: absolute; inset: 0; overflow: hidden;
+.deck .card {
+  position: absolute; inset: 0; overflow: hidden; background: transparent;
   animation: cardIn 0.9s ease both;
 }
 @keyframes cardIn { from { opacity: 0; } to { opacity: 1; } }

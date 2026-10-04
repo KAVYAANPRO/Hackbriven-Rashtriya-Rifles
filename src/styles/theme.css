@@ -31,6 +31,37 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
+/* Pastel light theme - swaps the same tokens the dark palette above sets,
+   so every component that already reads var(--color-*) adapts for free. */
+:root[data-theme='light'] {
+  --color-bg: #fdfdfb;
+  --color-surface: #ffffff;
+  --color-text: #1f2b28;
+  --color-accent: #4f9d87;
+  --color-accent-100: #eaf6f1;
+  --color-accent-200: #d3ecE3;
+  --color-accent-300: #a3cbe0;
+  --color-accent-400: #78c9b4;
+  --color-accent-500: #4f9d87;
+  --color-accent-600: #f8c8c2;
+  --color-accent-700: #e8a6ab;
+  --color-accent-800: #ddeef0;
+  --color-accent-900: #2c4842;
+  --color-neutral-100: #ffffff;
+  --color-neutral-200: #f5f7f5;
+  --color-neutral-300: #e4ece8;
+  --color-neutral-400: #c3d4cd;
+  --color-neutral-500: #9ab2aa;
+  --color-neutral-600: #6f8a81;
+  --color-neutral-700: #51675f;
+  --color-neutral-800: #334039;
+  --color-neutral-900: #1f2b28;
+  --color-divider: color-mix(in srgb, #1f2b28 14%, transparent);
+
+  --ink: #fdfdfb;
+  --teal: #4f9d87;
+}
+
 body { margin: 0; background: var(--color-bg); }
 a { color: var(--color-accent); text-decoration: none; }
 a:hover { color: var(--color-text); }

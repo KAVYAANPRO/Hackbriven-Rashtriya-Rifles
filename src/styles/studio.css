@@ -14,6 +14,21 @@
   display: grid; grid-template-columns: 224px minmax(0, 1fr); min-height: 100vh;
   background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px;
 }
+/* Pastel light theme - the studio app has its own local token set (above),
+   separate from the public landing/login pages' --color-* tokens, so the
+   toggle needs its own light override here too. */
+:root[data-theme='light'] .studio {
+  --bg: #fdfdfb;
+  --surface: #ffffff;
+  --surface-2: #eaf6f1;
+  --line: #dde8e3;
+  --line-2: #c3d4cd;
+  --text: #1f2b28;
+  --muted: #51675f;
+  --faint: #6f8a81;
+  --accent: #4f9d87;
+  --bad: #d9534f;
+}
 .studio * { box-sizing: border-box; }
 .studio h1, .studio h2, .studio h3, .studio p { margin: 0; }
 :where(.studio) button { font-family: inherit; color: inherit; }

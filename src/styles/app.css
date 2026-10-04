@@ -8,7 +8,18 @@
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- login ---------- */
-.login { min-height: 100vh; display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+/* No theme toggle lives on this screen, so it keeps the original dark
+   palette regardless of data-theme (same reasoning as .deck in landing.css). */
+.login {
+  min-height: 100vh; display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  --color-bg: #070d0d;
+  --color-surface: #111a1a;
+  --color-text: #f4ebc3;
+  --color-accent: #b4e768;
+  --ink: #070d0d;
+  --teal: #005066;
+  color: #f4ebc3;
+}
 .login-side { background: var(--teal); padding: 40px 48px; display: flex; flex-direction: column; justify-content: space-between; gap: 48px; border-right: 2px solid var(--color-text); }
 .login-side .brand-plain { cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 20px; letter-spacing: -0.02em; background: none; border: 0; color: inherit; font-family: inherit; padding: 0; }
 .login-h { font-weight: 900; font-size: clamp(44px, 5.5vw, 84px); line-height: 0.92; letter-spacing: -0.045em; margin: 0 0 20px; }

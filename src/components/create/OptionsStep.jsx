@@ -4,10 +4,13 @@ import {
   styleLabel, styleList, styleSwatch,
 } from '../../data.js';
 import { useStore } from '../../store.jsx';
+import { useTheme } from '../../theme.js';
 import { Seg, Skeleton } from '../common.jsx';
 import Icon from '../Icon.jsx';
+import ShapeGrid from '../ShapeGrid.jsx';
 import StyleArt from './StyleArt.jsx';
 import ImageDrop from './ImageDrop.jsx';
+import { GRID_COLORS } from './PromptStep.jsx';
 
 // Group the style list by style.group, keeping the server's order (a group sits where its first style is).
 function groupStyles(list) {
@@ -84,6 +87,8 @@ export default function OptionsStep({ onEdit, images }) {
     providers, refreshProviders,
   } = useStore();
   const headRef = useRef(null);
+  const [theme] = useTheme();
+  const gridColors = GRID_COLORS[theme] || GRID_COLORS.dark;
 
   // Re-check the image provider each time this step opens, so a used-up daily allowance is shown up front.
   useEffect(() => { refreshProviders(); }, [refreshProviders]);
@@ -133,6 +138,17 @@ export default function OptionsStep({ onEdit, images }) {
 
   return (
     <section className="cx-opts" aria-labelledby="cx-opts-title">
+      <div className="cx-opts-bg" aria-hidden="true">
+        <ShapeGrid
+          direction="diagonal"
+          speed={0.4}
+          squareSize={40}
+          shape="square"
+          borderColor={gridColors.border}
+          hoverFillColor={gridColors.fill}
+          hoverTrailAmount={6}
+        />
+      </div>
       <header className="cx-opts-head">
         <h1 id="cx-opts-title" className="cx-opts-title" tabIndex={-1} ref={headRef}>Set up your video</h1>
       </header>

@@ -12,6 +12,7 @@ import './styles/live.css';
 import './styles/fx.css';
 import App from './App.jsx';
 import { StoreProvider } from './store.jsx';
+import './theme.js';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

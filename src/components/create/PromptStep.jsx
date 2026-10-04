@@ -3,7 +3,17 @@ import { useStore } from '../../store.jsx';
 import { boostWithKey } from '../../api/boost.js';
 import { boostPrompt } from '../../api/client.js';
 import { providerName, styleList } from '../../data.js';
+import { useTheme } from '../../theme.js';
 import Icon from '../Icon.jsx';
+import ShapeGrid from '../ShapeGrid.jsx';
+
+// Border/fill colors for the background grid, matched to each theme's own
+// --line and --accent (ShapeGrid paints on a <canvas>, which can't read
+// CSS custom properties directly).
+export const GRID_COLORS = {
+  dark: { border: 'rgba(180, 231, 104, 0.22)', fill: 'rgba(180, 231, 104, 0.3)' },
+  light: { border: 'rgba(31, 43, 40, 0.12)', fill: 'rgba(79, 157, 135, 0.2)' },
+};
 
 const MAX_HEIGHT = 320;
 const TICK_MS = 15;
@@ -21,6 +31,8 @@ function Sparkle({ size = 15 }) {
 
 export default function PromptStep({ onSubmit }) {
   const { topic, setTopic, geminiKey, lang, style, pricing, go } = useStore();
+  const [theme] = useTheme();
+  const gridColors = GRID_COLORS[theme] || GRID_COLORS.dark;
   const [phase, setPhase] = useState('idle'); // idle | loading | typing
   const [error, setError] = useState('');
   const [source, setSource] = useState(null); // 'mine' (own Gemini key) | 'gemini' | 'groq' | 'openrouter' | 'local' | null
@@ -152,6 +164,17 @@ export default function PromptStep({ onSubmit }) {
 
   return (
     <section className="cx-stage" aria-labelledby="cx-title">
+      <div className="cx-stage-bg" aria-hidden="true">
+        <ShapeGrid
+          direction="diagonal"
+          speed={0.4}
+          squareSize={40}
+          shape="square"
+          borderColor={gridColors.border}
+          hoverFillColor={gridColors.fill}
+          hoverTrailAmount={6}
+        />
+      </div>
       <h1 id="cx-title" className="cx-title">What video should we make?</h1>
 
       <div className="cx-box">
