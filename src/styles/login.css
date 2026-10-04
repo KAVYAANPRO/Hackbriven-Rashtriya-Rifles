@@ -29,7 +29,8 @@
 .frame { position: absolute; top: 100%; aspect-ratio: 9 / 14; border: 1px solid rgba(244, 235, 195, 0.22); background: linear-gradient(160deg, rgba(180, 231, 104, 0.12), rgba(0, 80, 102, 0.55)); padding: 6px; display: flex; flex-direction: column; gap: 6px; animation: frameRise var(--dur) linear var(--delay) infinite backwards; will-change: transform, opacity; }
 .frame-art { flex: 1; position: relative; overflow: hidden; background: repeating-linear-gradient(135deg, rgba(0, 80, 102, 0.9) 0 6px, rgba(12, 43, 52, 0.9) 6px 12px); }
 .frame-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(244, 235, 195, 0.28) 50%, transparent 70%); transform: translateX(-120%); animation: shimmer 2.6s ease-in-out infinite; }
-.frame-meta { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: rgba(244, 235, 195, 0.7); }
+.frame-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-family: var(--font-mono); font-size: 9px; color: rgba(244, 235, 195, 0.7); }
+.frame-meta span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .frame-meta b { width: 22px; height: 3px; background: var(--color-accent); transform-origin: left; animation: fillBar 3.4s ease-in-out infinite; }
 @keyframes frameRise {
   0% { transform: translate3d(0, 0, 0) rotate(var(--tilt)); opacity: 0; }

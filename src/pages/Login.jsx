@@ -5,13 +5,16 @@ import { LogoMark } from '../components/Logo.jsx';
 const STAGES = ['Intelligence', 'Generation', 'Composition', 'Validation', 'Review'];
 
 // Rising "video frame" cards: [left %, width px, duration s, delay s, tilt deg, label]
+// Labels are sample topics (what this product actually turns into a video),
+// not generic "scene N" placeholders - makes the animation read as real
+// product output instead of decorative loading boxes.
 const FRAMES = [
-  [6, 92, 17, 0, -6, 'scene 01'],
-  [19, 120, 21, 5, 4, 'scene 02'],
-  [37, 84, 15, 9, -3, 'scene 03'],
-  [52, 132, 23, 2, 6, 'scene 04'],
-  [68, 96, 18, 11, -5, 'scene 05'],
-  [82, 112, 20, 7, 3, 'scene 06'],
+  [6, 92, 17, 0, -6, 'phone review'],
+  [19, 120, 21, 5, 4, 'morning routine'],
+  [37, 84, 15, 9, -3, 'startup pitch'],
+  [52, 132, 23, 2, 6, 'diwali recipe'],
+  [68, 96, 18, 11, -5, 'AI explained'],
+  [82, 112, 20, 7, 3, 'match recap'],
 ];
 
 // Lights the pipeline stages one after another, then starts over.
